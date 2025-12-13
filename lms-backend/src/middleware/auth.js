@@ -1,4 +1,3 @@
-// src/middleware/auth.js
 import jwt from 'jsonwebtoken';
 import { ROLES } from '../config/constants.js';
 
@@ -14,7 +13,7 @@ export const authenticateToken = (req, res, next) => {
     }
 
     const SECRET = process.env.JWT_SECRET;
-    
+
     if (!SECRET) {
         return res.status(500).json({
             success: false,
@@ -51,7 +50,7 @@ export const authorize = (...allowedRoles) => {
         }
 
         const userRole = req.user.role;
-        
+
         if (!allowedRoles.includes(userRole)) {
             return res.status(403).json({
                 success: false,

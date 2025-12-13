@@ -378,6 +378,7 @@ const API = {
     logout() {
         localStorage.removeItem(CONFIG.SESSION_KEY);
     }
+
 };
 
 // ===== CMAPI ALIAS (backward compatibility) =====
@@ -389,6 +390,196 @@ const CMAPI = {
     update: (id, data) => API.updateCM(id, data),
     delete: (id) => API.deleteCM(id)
 };
+// ===== API SUPPLEMENTS - CLASSFLOW LMS =====
+// Phần bổ sung cho api.js: Notifications, Files, Holidays, Activity Logs
+
+// Thêm vào object API trong file api.js:
+
+// ===== NOTIFICATIONS API =====
+
+API.getNotifications = async function (userId = null) {
+    const url = userId ? `${this.BASE_URL}/notifications?userId=${userId}` : `${this.BASE_URL}/notifications`;
+    return await this.request(url);
+};
+
+API.getUnreadNotificationCount = async function () {
+    return await this.request(`${this.BASE_URL}/notifications/unread-count`);
+};
+
+API.createNotification = async function (data) {
+    return await this.request(`${this.BASE_URL}/notifications`, {
+        method: 'POST',
+        body: JSON.stringify(data)
+    });
+};
+
+API.bulkCreateNotifications = async function (userIds, type, title, message, data = null) {
+    return await this.request(`${this.BASE_URL}/notifications/bulk`, {
+        method: 'POST',
+        body: JSON.stringify({ userIds, type, title, message, data })
+    });
+};
+
+API.markNotificationRead = async function (id) {
+    return await this.request(`${this.BASE_URL}/notifications/${id}/read`, {
+        method: 'PUT'
+    });
+};
+
+API.markAllNotificationsRead = async function () {
+    return await this.request(`${this.BASE_URL}/notifications/read-all`, {
+        method: 'PUT'
+    });
+};
+
+API.deleteNotification = async function (id) {
+    return await this.request(`${this.BASE_URL}/notifications/${id}`, {
+        method: 'DELETE'
+    });
+};
+
+API.deleteAllNotifications = async function () {
+    return await this.request(`${this.BASE_URL}/notifications`, {
+        method: 'DELETE'
+    });
+};
+
+// ===== FILES API =====
+
+API.getFiles = async function (params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    const url = queryString ? `${this.BASE_URL}/files?${queryString}` : `${this.BASE_URL}/files`;
+    return await this.request(url);
+};
+
+API.getFile = async function (id) {
+    return await this.request(`${this.BASE_URL}/files/${id}`);
+};
+
+API.getFilesByClass = async function (classId) {
+    return await this.request(`${this.BASE_URL}/files/class/${classId}`);
+};
+
+API.uploadFile = async function (formData) {
+    const session = this.getSession();
+    if (!session || !session.token) {
+        throw new Error('Chưa đăng nhập');
+    }
+
+    const response = await fetch(`${this.BASE_URL}/files/upload`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${session.token}`
+            // Don't set Content-Type for FormData, browser will set it with boundary
+        },
+        body: formData
+    });
+
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Upload failed');
+    }
+
+    return await response.json();
+};
+
+API.updateFile = async function (id, data) {
+    return await this.request(`${this.BASE_URL}/files/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+    });
+};
+
+API.deleteFile = async function (id) {
+    return await this.request(`${this.BASE_URL}/files/${id}`, {
+        method: 'DELETE'
+    });
+};
+
+API.getFileStats = async function () {
+    return await this.request(`${this.BASE_URL}/files/stats`);
+};
+
+// ===== HOLIDAYS API =====
+
+API.getHolidays = async function (year = null) {
+    const url = year ? `${this.BASE_URL}/holidays?year=${year}` : `${this.BASE_URL}/holidays`;
+    return await this.request(url);
+};
+
+API.getUpcomingHolidays = async function (limit = 5) {
+    return await this.request(`${this.BASE_URL}/holidays/upcoming?limit=${limit}`);
+};
+
+API.getHolidaysByRange = async function (startDate, endDate) {
+    return await this.request(`${this.BASE_URL}/holidays/range?startDate=${startDate}&endDate=${endDate}`);
+};
+
+API.getHoliday = async function (id) {
+    return await this.request(`${this.BASE_URL}/holidays/${id}`);
+};
+
+API.createHoliday = async function (data) {
+    return await this.request(`${this.BASE_URL}/holidays`, {
+        method: 'POST',
+        body: JSON.stringify(data)
+    });
+};
+
+API.updateHoliday = async function (id, data) {
+    return await this.request(`${this.BASE_URL}/holidays/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+    });
+};
+
+API.deleteHoliday = async function (id) {
+    return await this.request(`${this.BASE_URL}/holidays/${id}`, {
+        method: 'DELETE'
+    });
+};
+
+API.bulkCreateHolidays = async function (holidays) {
+    return await this.request(`${this.BASE_URL}/holidays/bulk`, {
+        method: 'POST',
+        body: JSON.stringify({ holidays })
+    });
+};
+
+// ===== ACTIVITY LOGS API =====
+
+API.getAllActivityLogs = async function (params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    const url = queryString ? `${this.BASE_URL}/activity-logs?${queryString}` : `${this.BASE_URL}/activity-logs`;
+    return await this.request(url);
+};
+
+API.getMyActivityLogs = async function (limit = 50) {
+    return await this.request(`${this.BASE_URL}/activity-logs/my?limit=${limit}`);
+};
+
+API.getActivityLogStats = async function (startDate = null, endDate = null) {
+    let url = `${this.BASE_URL}/activity-logs/stats`;
+    const params = new URLSearchParams();
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
+    const queryString = params.toString();
+    if (queryString) url += '?' + queryString;
+    return await this.request(url);
+};
+
+API.getActivityLogsByEntity = async function (entityType, entityId) {
+    return await this.request(`${this.BASE_URL}/activity-logs/entity/${entityType}/${entityId}`);
+};
+
+API.cleanupActivityLogs = async function (days = 90) {
+    return await this.request(`${this.BASE_URL}/activity-logs/cleanup?days=${days}`, {
+        method: 'DELETE'
+    });
+};
+
+// ===== EXPORT =====
+// Không cần export vì đang extend object API có sẵn
 
 // ===== EXPORT TO WINDOW =====
 window.API = API;
