@@ -70,9 +70,15 @@
                                 <strong>Demo:</strong>
                             </p>
                             <div style="font-size:11px;color:var(--text-light);text-align:center;">
-                                admin@classflow.edu.vn / 123456<br>
-                                minh.gv@classflow.edu.vn / 123456<br>
-                                mai.cm@classflow.edu.vn / 123456
+                                <a href="/cdn-cgi/l/email-protection" class="__cf_email__"
+                                    data-cfemail="3a5b5e5753547a59565b49495c56554d145f5e4f144c54">[email&#160;protected]</a>
+                                / 123456<br>
+                                <a href="/cdn-cgi/l/email-protection" class="__cf_email__"
+                                    data-cfemail="fc91959294d29b8abc9f909d8f8f9a90938bd2999889d28a92">[email&#160;protected]</a>
+                                / 123456<br>
+                                <a href="/cdn-cgi/l/email-protection" class="__cf_email__"
+                                    data-cfemail="5e333f37703d331e3d323f2d2d38323129703b3a2b702830">[email&#160;protected]</a>
+                                / 123456
                             </div>
                         </div>
                     </div>
@@ -144,24 +150,13 @@
                 <li><a onclick="showStudents()"><i class="fas fa-user-graduate"></i> Học sinh</a></li>
                 <li><a onclick="showTeachers()"><i class="fas fa-chalkboard-teacher"></i> Giáo viên</a></li>
                 <li><a onclick="showCMs()"><i class="fas fa-user-shield"></i> Class Manager</a></li>
-                <!-- ===== ADD TO SIDEBAR MENU (after CMs menu item) ===== -->
-
                 <li><a onclick="showNotifications()">
                         <i class="fas fa-bell"></i> Thông báo
                         <span class="badge badge-danger" id="unreadBadge" style="display:none;">0</span>
                     </a></li>
-
-                <li><a onclick="showFiles()">
-                        <i class="fas fa-folder"></i> Tài liệu
-                    </a></li>
-
-                <li><a onclick="showHolidays()">
-                        <i class="fas fa-calendar-alt"></i> Ngày nghỉ lễ
-                    </a></li>
-
-                <li><a onclick="showActivityLogs()">
-                        <i class="fas fa-history"></i> Lịch sử hoạt động
-                    </a></li>
+                <li><a onclick="showFiles()"><i class="fas fa-folder"></i> Tài liệu</a></li>
+                <li><a onclick="showHolidays()"><i class="fas fa-calendar-alt"></i> Ngày nghỉ lễ</a></li>
+                <li><a onclick="showActivityLogs()"><i class="fas fa-history"></i> Lịch sử hoạt động</a></li>
             </ul>
             <div class="sidebar-footer">
                 <div class="user-profile">
@@ -204,6 +199,27 @@
                         <div class="stat-info">
                             <h3 id="totalTeachers">0</h3>
                             <p>Giáo viên</p>
+                        </div>
+                    </div>
+                    <div class="stat-card orange">
+                        <div class="stat-icon"><i class="fas fa-user-shield"></i></div>
+                        <div class="stat-info">
+                            <h3 id="totalCMs">0</h3>
+                            <p>Class Manager</p>
+                        </div>
+                    </div>
+                    <div class="stat-card red">
+                        <div class="stat-icon"><i class="fas fa-bell"></i></div>
+                        <div class="stat-info">
+                            <h3 id="totalNotifications">0</h3>
+                            <p>Thông báo chưa đọc</p>
+                        </div>
+                    </div>
+                    <div class="stat-card cyan">
+                        <div class="stat-icon"><i class="fas fa-folder"></i></div>
+                        <div class="stat-info">
+                            <h3 id="totalFiles">0</h3>
+                            <p>Tài liệu</p>
                         </div>
                     </div>
                 </div>
@@ -256,114 +272,208 @@
                     </table>
                 </div>
             </section>
-            <div class="stats-grid">
-                <div class="stat-card green">
-                    <div class="stat-icon"><i class="fas fa-chalkboard"></i></div>
-                    <div class="stat-info">
-                        <h3 id="totalClasses">0</h3>
-                        <p>Lớp học</p>
-                    </div>
-                </div>
-                <div class="stat-card blue">
-                    <div class="stat-icon"><i class="fas fa-user-graduate"></i></div>
-                    <div class="stat-info">
-                        <h3 id="totalStudents">0</h3>
-                        <p>Học sinh</p>
-                    </div>
-                </div>
-                <div class="stat-card purple">
-                    <div class="stat-icon"><i class="fas fa-chalkboard-teacher"></i></div>
-                    <div class="stat-info">
-                        <h3 id="totalTeachers">0</h3>
-                        <p>Giáo viên</p>
-                    </div>
-                </div>
-                <!-- NEW STAT CARDS -->
-                <div class="stat-card orange">
-                    <div class="stat-icon"><i class="fas fa-user-shield"></i></div>
-                    <div class="stat-info">
-                        <h3 id="totalCMs">0</h3>
-                        <p>Class Manager</p>
-                    </div>
-                </div>
-                <div class="stat-card red">
-                    <div class="stat-icon"><i class="fas fa-bell"></i></div>
-                    <div class="stat-info">
-                        <h3 id="totalNotifications">0</h3>
-                        <p>Thông báo chưa đọc</p>
-                    </div>
-                </div>
-                <div class="stat-card cyan">
-                    <div class="stat-icon"><i class="fas fa-folder"></i></div>
-                    <div class="stat-info">
-                        <h3 id="totalFiles">0</h3>
-                        <p>Tài liệu</p>
-                    </div>
-                </div>
-            </div> <!-- Đây là tag đóng của stats-grid -->
-    </div>
-    <!-- ===== TEACHERS ===== -->
-    <section id="teachersContent" class="content-section">
-        <div class="content-header">
-            <h1><i class="fas fa-chalkboard-teacher"></i> Quản lý Giáo viên</h1>
-            <div class="header-actions">
-                <button class="btn btn-secondary btn-sm" onclick="exportTeachers()"><i class="fas fa-file-excel"></i>
-                    Export</button>
-                <button class="btn btn-primary" onclick="openAddTeacherModal()"><i class="fas fa-plus"></i> Thêm
-                    giáo viên</button>
-            </div>
-        </div>
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Mã GV</th>
-                        <th>Họ tên</th>
-                        <th>Email</th>
-                        <th>SĐT</th>
-                        <th>Chuyên môn</th>
-                        <th>Trạng thái</th>
-                        <th style="width:100px;">Thao tác</th>
-                    </tr>
-                </thead>
-                <tbody id="teachersTable"></tbody>
-            </table>
-        </div>
-    </section>
 
-    <!-- ===== CMS ===== -->
-    <section id="cmsContent" class="content-section">
-        <div class="content-header">
-            <h1><i class="fas fa-user-shield"></i> Quản lý Class Manager</h1>
-            <div class="header-actions">
-                <button class="btn btn-secondary btn-sm" onclick="exportCMs()"><i class="fas fa-file-excel"></i>
-                    Export</button>
-                <button class="btn btn-primary" onclick="openAddCMModal()"><i class="fas fa-plus"></i> Thêm
-                    CM</button>
-            </div>
-        </div>
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Mã CM</th>
-                        <th>Họ tên</th>
-                        <th>Email</th>
-                        <th>SĐT</th>
-                        <th>Số lớp</th>
-                        <th>Trạng thái</th>
-                        <th style="width:120px;">Thao tác</th>
-                    </tr>
-                </thead>
-                <tbody id="cmsTable"></tbody>
-            </table>
-        </div>
-    </section>
-    </main>
+            <!-- ===== TEACHERS ===== -->
+            <section id="teachersContent" class="content-section">
+                <div class="content-header">
+                    <h1><i class="fas fa-chalkboard-teacher"></i> Quản lý Giáo viên</h1>
+                    <div class="header-actions">
+                        <button class="btn btn-secondary btn-sm" onclick="exportTeachers()"><i
+                                class="fas fa-file-excel"></i> Export</button>
+                        <button class="btn btn-primary" onclick="openAddTeacherModal()"><i class="fas fa-plus"></i> Thêm
+                            giáo viên</button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Mã GV</th>
+                                <th>Họ tên</th>
+                                <th>Email</th>
+                                <th>SĐT</th>
+                                <th>Chuyên môn</th>
+                                <th>Trạng thái</th>
+                                <th style="width:100px;">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="teachersTable"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ===== CMS ===== -->
+            <section id="cmsContent" class="content-section">
+                <div class="content-header">
+                    <h1><i class="fas fa-user-shield"></i> Quản lý Class Manager</h1>
+                    <div class="header-actions">
+                        <button class="btn btn-secondary btn-sm" onclick="exportCMs()"><i class="fas fa-file-excel"></i>
+                            Export</button>
+                        <button class="btn btn-primary" onclick="openAddCMModal()"><i class="fas fa-plus"></i> Thêm
+                            CM</button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Mã CM</th>
+                                <th>Họ tên</th>
+                                <th>Email</th>
+                                <th>SĐT</th>
+                                <th>Số lớp</th>
+                                <th>Trạng thái</th>
+                                <th style="width:120px;">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cmsTable"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ===== NOTIFICATIONS ===== -->
+            <section id="notificationsContent" class="content-section">
+                <div class="content-header">
+                    <h1><i class="fas fa-bell"></i> Thông báo</h1>
+                    <div class="header-actions">
+                        <button class="btn btn-secondary btn-sm" onclick="markAllNotificationsRead()">
+                            <i class="fas fa-check-double"></i> Đánh dấu đã đọc
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteAllNotifications()">
+                            <i class="fas fa-trash"></i> Xóa tất cả
+                        </button>
+                    </div>
+                </div>
+                <div class="notifications-container">
+                    <div id="notificationsList"></div>
+                    <div id="noNotifications"
+                        style="display:none;text-align:center;padding:60px;color:var(--text-light);">
+                        <i class="fas fa-bell-slash" style="font-size:48px;margin-bottom:16px;"></i>
+                        <p>Không có thông báo mới</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== FILES ===== -->
+            <section id="filesContent" class="content-section">
+                <div class="content-header">
+                    <h1><i class="fas fa-folder"></i> Quản lý Tài liệu</h1>
+                    <div class="header-actions">
+                        <select id="filesCategoryFilter" class="form-control" style="width:150px;margin-right:12px;"
+                            onchange="filterFiles()">
+                            <option value="">Tất cả loại</option>
+                            <option value="material">Tài liệu</option>
+                            <option value="assignment">Bài tập</option>
+                            <option value="submission">Bài nộp</option>
+                            <option value="other">Khác</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="openUploadFileModal()">
+                            <i class="fas fa-upload"></i> Upload file
+                        </button>
+                    </div>
+                </div>
+                <div class="stats-row" style="margin-bottom:24px;">
+                    <div class="stat-item">
+                        <i class="fas fa-file"></i>
+                        <span id="totalFilesCount">0</span> files
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-hdd"></i>
+                        <span id="totalStorageSize">0 MB</span>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width:40px;"><i class="fas fa-file"></i></th>
+                                <th>Tên file</th>
+                                <th>Lớp</th>
+                                <th>Loại</th>
+                                <th>Kích thước</th>
+                                <th>Người upload</th>
+                                <th>Ngày</th>
+                                <th style="width:120px;">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="filesTable"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ===== HOLIDAYS ===== -->
+            <section id="holidaysContent" class="content-section">
+                <div class="content-header">
+                    <h1><i class="fas fa-calendar-alt"></i> Quản lý Ngày nghỉ lễ</h1>
+                    <div class="header-actions">
+                        <select id="holidayYearFilter" class="form-control" style="width:120px;margin-right:12px;"
+                            onchange="filterHolidays()">
+                            <option value="">Tất cả</option>
+                            <option value="2024">2024</option>
+                            <option value="2025" selected>2025</option>
+                            <option value="2026">2026</option>
+                        </select>
+                        <button class="btn btn-secondary btn-sm" onclick="openImportHolidaysModal()"
+                            id="importHolidaysBtn" style="display:none;">
+                            <i class="fas fa-file-import"></i> Import
+                        </button>
+                        <button class="btn btn-primary" onclick="openAddHolidayModal()" id="addHolidayBtn"
+                            style="display:none;">
+                            <i class="fas fa-plus"></i> Thêm ngày nghỉ
+                        </button>
+                    </div>
+                </div>
+                <div class="holidays-grid" id="holidaysGrid"></div>
+            </section>
+
+            <!-- ===== ACTIVITY LOGS ===== -->
+            <section id="activityLogsContent" class="content-section">
+                <div class="content-header">
+                    <h1><i class="fas fa-history"></i> Lịch sử hoạt động</h1>
+                    <div class="header-actions">
+                        <select id="logsActionFilter" class="form-control" style="width:150px;margin-right:12px;"
+                            onchange="filterLogs()">
+                            <option value="">Tất cả hành động</option>
+                            <option value="create">Tạo mới</option>
+                            <option value="update">Cập nhật</option>
+                            <option value="delete">Xóa</option>
+                            <option value="login">Đăng nhập</option>
+                            <option value="export">Xuất file</option>
+                        </select>
+                        <select id="logsEntityFilter" class="form-control" style="width:150px;margin-right:12px;"
+                            onchange="filterLogs()">
+                            <option value="">Tất cả đối tượng</option>
+                            <option value="class">Lớp học</option>
+                            <option value="student">Học sinh</option>
+                            <option value="teacher">Giáo viên</option>
+                            <option value="attendance">Điểm danh</option>
+                            <option value="grade">Điểm</option>
+                        </select>
+                        <button class="btn btn-secondary btn-sm" onclick="loadActivityLogs()">
+                            <i class="fas fa-sync"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width:160px;">Thời gian</th>
+                                <th>Người dùng</th>
+                                <th>Hành động</th>
+                                <th>Đối tượng</th>
+                                <th>IP</th>
+                                <th style="width:100px;">Chi tiết</th>
+                            </tr>
+                        </thead>
+                        <tbody id="activityLogsTable"></tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
     </div>
 
     <!-- ==================== MODALS ==================== -->
-
     <!-- Class Modal -->
     <div class="modal" id="classModal">
         <div class="modal-content">
@@ -429,17 +539,14 @@
         </div>
     </div>
 
-    <!-- Class Detail Modal - FIXED STRUCTURE -->
+    <!-- Class Detail Modal -->
     <div class="modal" id="classDetailModal">
         <div class="modal-content modal-xl">
-            <!-- Header -->
             <div class="modal-header green" id="classDetailHeader">
                 <h3>Chi tiết lớp học</h3>
             </div>
             <button class="modal-close" onclick="closeModal('classDetailModal')"
                 style="position:absolute;top:16px;right:16px;color:white;">&times;</button>
-
-            <!-- Tabs Navigation -->
             <div class="tabs">
                 <button class="tab active" onclick="switchTab(event, 'studentsTab')">
                     <i class="fas fa-users"></i> Học sinh
@@ -447,25 +554,45 @@
                 <button class="tab" onclick="switchTab(event, 'attendanceTab')">
                     <i class="fas fa-clipboard-check"></i> Điểm danh
                 </button>
+                <button class="tab" onclick="switchTab(event, 'assignmentsTab')">
+                    <i class="fas fa-tasks"></i> Bài tập
+                </button>
+                <button class="tab" onclick="switchTab(event, 'gradesTab')">
+                    <i class="fas fa-chart-bar"></i> Điểm số
+                </button>
                 <button class="tab" onclick="switchTab(event, 'commentsTab')">
                     <i class="fas fa-comments"></i> Nhận xét
                 </button>
             </div>
-
-            <!-- Modal Body with Tab Contents -->
             <div class="modal-body" style="padding:0;">
-                <!-- Students Tab -->
                 <div class="tab-content active" id="studentsTab">
                     <div class="students-list" id="classStudentsList"></div>
                 </div>
-
-                <!-- Attendance Tab -->
                 <div class="tab-content" id="attendanceTab">
                     <div class="sessions-grid" id="sessionsGrid"></div>
                     <div id="attendanceTableContainer"></div>
                 </div>
-
-                <!-- Comments Tab -->
+                <div class="tab-content" id="assignmentsTab">
+                    <div
+                        style="padding:20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+                        <h3>Danh sách bài tập</h3>
+                        <button class="btn btn-primary btn-sm" onclick="openAddAssignmentModal()" id="addAssignmentBtn"
+                            style="display:none;">
+                            <i class="fas fa-plus"></i> Thêm bài tập
+                        </button>
+                    </div>
+                    <div id="assignmentsListContainer"></div>
+                </div>
+                <div class="tab-content" id="gradesTab">
+                    <div
+                        style="padding:20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+                        <h3>Bảng điểm tổng hợp</h3>
+                        <button class="btn btn-secondary btn-sm" onclick="exportGradesExcel(currentClassId)">
+                            <i class="fas fa-file-excel"></i> Export Excel
+                        </button>
+                    </div>
+                    <div id="gradesTableContainer"></div>
+                </div>
                 <div class="tab-content" id="commentsTab">
                     <div
                         style="padding:20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
@@ -616,155 +743,6 @@
         </div>
     </div>
 
-    <!-- ===== CONTENT SECTIONS ===== -->
-    <!-- Thêm vào phần main-content (sau cmsContent) -->
-
-    <!-- ===== NOTIFICATIONS ===== -->
-    <section id="notificationsContent" class="content-section">
-        <div class="content-header">
-            <h1><i class="fas fa-bell"></i> Thông báo</h1>
-            <div class="header-actions">
-                <button class="btn btn-secondary btn-sm" onclick="markAllNotificationsRead()">
-                    <i class="fas fa-check-double"></i> Đánh dấu đã đọc
-                </button>
-                <button class="btn btn-danger btn-sm" onclick="deleteAllNotifications()">
-                    <i class="fas fa-trash"></i> Xóa tất cả
-                </button>
-            </div>
-        </div>
-
-        <div class="notifications-container">
-            <div id="notificationsList"></div>
-            <div id="noNotifications" style="display:none;text-align:center;padding:60px;color:var(--text-light);">
-                <i class="fas fa-bell-slash" style="font-size:48px;margin-bottom:16px;"></i>
-                <p>Không có thông báo mới</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- ===== FILES ===== -->
-    <section id="filesContent" class="content-section">
-        <div class="content-header">
-            <h1><i class="fas fa-folder"></i> Quản lý Tài liệu</h1>
-            <div class="header-actions">
-                <select id="filesCategoryFilter" class="form-control" style="width:150px;margin-right:12px;"
-                    onchange="filterFiles()">
-                    <option value="">Tất cả loại</option>
-                    <option value="material">Tài liệu</option>
-                    <option value="assignment">Bài tập</option>
-                    <option value="submission">Bài nộp</option>
-                    <option value="other">Khác</option>
-                </select>
-                <button class="btn btn-primary" onclick="openUploadFileModal()">
-                    <i class="fas fa-upload"></i> Upload file
-                </button>
-            </div>
-        </div>
-
-        <div class="stats-row" style="margin-bottom:24px;">
-            <div class="stat-item">
-                <i class="fas fa-file"></i>
-                <span id="totalFilesCount">0</span> files
-            </div>
-            <div class="stat-item">
-                <i class="fas fa-hdd"></i>
-                <span id="totalStorageSize">0 MB</span>
-            </div>
-        </div>
-
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th style="width:40px;"><i class="fas fa-file"></i></th>
-                        <th>Tên file</th>
-                        <th>Lớp</th>
-                        <th>Loại</th>
-                        <th>Kích thước</th>
-                        <th>Người upload</th>
-                        <th>Ngày</th>
-                        <th style="width:120px;">Thao tác</th>
-                    </tr>
-                </thead>
-                <tbody id="filesTable"></tbody>
-            </table>
-        </div>
-    </section>
-
-    <!-- ===== HOLIDAYS ===== -->
-    <section id="holidaysContent" class="content-section">
-        <div class="content-header">
-            <h1><i class="fas fa-calendar-alt"></i> Quản lý Ngày nghỉ lễ</h1>
-            <div class="header-actions">
-                <select id="holidayYearFilter" class="form-control" style="width:120px;margin-right:12px;"
-                    onchange="filterHolidays()">
-                    <option value="">Tất cả</option>
-                    <option value="2024">2024</option>
-                    <option value="2025" selected>2025</option>
-                    <option value="2026">2026</option>
-                </select>
-                <button class="btn btn-secondary btn-sm" onclick="openImportHolidaysModal()" id="importHolidaysBtn"
-                    style="display:none;">
-                    <i class="fas fa-file-import"></i> Import
-                </button>
-                <button class="btn btn-primary" onclick="openAddHolidayModal()" id="addHolidayBtn"
-                    style="display:none;">
-                    <i class="fas fa-plus"></i> Thêm ngày nghỉ
-                </button>
-            </div>
-        </div>
-
-        <div class="holidays-grid" id="holidaysGrid"></div>
-    </section>
-
-    <!-- ===== ACTIVITY LOGS ===== -->
-    <section id="activityLogsContent" class="content-section">
-        <div class="content-header">
-            <h1><i class="fas fa-history"></i> Lịch sử hoạt động</h1>
-            <div class="header-actions">
-                <select id="logsActionFilter" class="form-control" style="width:150px;margin-right:12px;"
-                    onchange="filterLogs()">
-                    <option value="">Tất cả hành động</option>
-                    <option value="create">Tạo mới</option>
-                    <option value="update">Cập nhật</option>
-                    <option value="delete">Xóa</option>
-                    <option value="login">Đăng nhập</option>
-                    <option value="export">Xuất file</option>
-                </select>
-                <select id="logsEntityFilter" class="form-control" style="width:150px;margin-right:12px;"
-                    onchange="filterLogs()">
-                    <option value="">Tất cả đối tượng</option>
-                    <option value="class">Lớp học</option>
-                    <option value="student">Học sinh</option>
-                    <option value="teacher">Giáo viên</option>
-                    <option value="attendance">Điểm danh</option>
-                    <option value="grade">Điểm</option>
-                </select>
-                <button class="btn btn-secondary btn-sm" onclick="loadActivityLogs()">
-                    <i class="fas fa-sync"></i> Refresh
-                </button>
-            </div>
-        </div>
-
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th style="width:160px;">Thời gian</th>
-                        <th>Người dùng</th>
-                        <th>Hành động</th>
-                        <th>Đối tượng</th>
-                        <th>IP</th>
-                        <th style="width:100px;">Chi tiết</th>
-                    </tr>
-                </thead>
-                <tbody id="activityLogsTable"></tbody>
-            </table>
-        </div>
-    </section>
-
-    <!-- ===== MODALS ===== -->
-
     <!-- Upload File Modal -->
     <div class="modal" id="uploadFileModal">
         <div class="modal-content">
@@ -815,7 +793,7 @@
         </div>
     </div>
 
-    <!-- Add Holiday Modal -->
+    <!-- Holiday Modal -->
     <div class="modal" id="holidayModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -883,12 +861,128 @@
         </div>
     </div>
 
+    <!-- Assignment Modal (Thêm/Sửa BTVN) -->
+    <div class="modal" id="assignmentModal">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h3 id="assignmentModalTitle"><i class="fas fa-plus"></i> Thêm bài tập mới</h3>
+                <button class="modal-close" onclick="closeModal('assignmentModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="assignmentId">
+                <div class="form-group">
+                    <label>Tiêu đề bài tập <span class="required">*</span></label>
+                    <input type="text" class="form-control" id="assignmentTitle"
+                        placeholder="VD: BTVN Tuần 1 - HTML Basics">
+                </div>
+                <div class="form-group">
+                    <label>Mô tả / Yêu cầu</label>
+                    <textarea class="form-control" id="assignmentDescription" rows="4"
+                        placeholder="Mô tả chi tiết bài tập..."></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Deadline <span class="required">*</span></label>
+                        <input type="datetime-local" class="form-control" id="assignmentDeadline">
+                    </div>
+                    <div class="form-group">
+                        <label>Điểm tối đa <span class="required">*</span></label>
+                        <input type="number" class="form-control" id="assignmentMaxScore" value="10" min="1" max="100"
+                            step="0.5">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>File đề bài (tùy chọn)</label>
+                    <input type="file" class="form-control" id="assignmentFileInput"
+                        accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx">
+                    <small style="color:var(--text-light);">PDF, DOC, XLS, PPT - Max 10MB</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('assignmentModal')">Hủy</button>
+                <button class="btn btn-primary" onclick="saveAssignment()"><i class="fas fa-save"></i> Lưu</button>
+            </div>
+        </div>
+    </div>
 
+    <!-- Grading Modal (Chấm điểm) -->
+    <div class="modal" id="gradingModal">
+        <div class="modal-content modal-xl">
+            <div class="modal-header green">
+                <div>
+                    <h3 id="gradingAssignmentTitle">Chấm điểm bài tập</h3>
+                    <p style="margin:8px 0 0 0;font-size:14px;opacity:0.9;">
+                        <i class="fas fa-clock"></i> Deadline: <span id="gradingDeadline"></span>
+                        | <i class="fas fa-star"></i> Điểm tối đa: <span id="gradingMaxScore"></span>
+                    </p>
+                </div>
+            </div>
+            <button class="modal-close" onclick="closeModal('gradingModal')"
+                style="position:absolute;top:16px;right:16px;color:white;">&times;</button>
+            <div class="modal-body" style="padding:0;">
+                <div style="padding:16px;border-bottom:1px solid var(--border);background:white;">
+                    <button class="btn btn-primary btn-sm" onclick="bulkGrade()">
+                        <i class="fas fa-save"></i> Lưu tất cả
+                    </button>
+                </div>
+                <div class="table-container" style="max-height:500px;overflow-y:auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width:100px;">MSSV</th>
+                                <th>Họ tên</th>
+                                <th style="width:140px;">Trạng thái</th>
+                                <th style="width:140px;">Thời gian nộp</th>
+                                <th style="width:100px;">File nộp</th>
+                                <th style="width:160px;">Điểm</th>
+                                <th style="width:250px;">Nhận xét</th>
+                            </tr>
+                        </thead>
+                        <tbody id="submissionsTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Submit Assignment Modal (Học sinh nộp bài) -->
+    <div class="modal" id="submitAssignmentModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-upload"></i> Nộp bài tập</h3>
+                <button class="modal-close" onclick="closeModal('submitAssignmentModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>File bài làm (tùy chọn)</label>
+                    <input type="file" class="form-control" id="submissionFileInput"
+                        accept=".pdf,.doc,.docx,.xls,.xlsx,.zip,.rar">
+                    <small style="color:var(--text-light);">PDF, DOC, XLS, ZIP, RAR - Max 10MB</small>
+                </div>
+                <div class="form-group">
+                    <label>Nội dung bài làm (tùy chọn)</label>
+                    <textarea class="form-control" id="submissionContent" rows="6"
+                        placeholder="Nhập nội dung bài làm hoặc ghi chú..."></textarea>
+                </div>
+                <div class="alert alert-info"
+                    style="background:#e3f2fd;padding:12px;border-radius:6px;margin-top:16px;">
+                    <i class="fas fa-info-circle" style="color:#1976d2;"></i>
+                    Bạn có thể nộp file, nhập nội dung, hoặc cả hai. Hãy đảm bảo hoàn thành bài tập trước deadline!
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('submitAssignmentModal')">Hủy</button>
+                <button class="btn btn-primary" onclick="submitAssignment()"><i class="fas fa-paper-plane"></i> Nộp
+                    bài</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="api.js"></script>
     <script src="app.js"></script>
+    <script src="app-assignments.js"></script>
 </body>
 
 </html>

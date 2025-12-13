@@ -206,7 +206,8 @@ const API = {
     async deleteCM(id) {
         return await this.call(`/cms/${id}`, 'DELETE');
     },
-    // ===== NOTIFICATIONS API (THÊM MỚI) =====
+
+    // ===== NOTIFICATIONS API =====
     async getNotifications(userId = null) {
         const endpoint = userId ? `/notifications?userId=${userId}` : '/notifications';
         const response = await this.call(endpoint);
@@ -218,12 +219,24 @@ const API = {
         return response.data || { count: 0 };
     },
 
+    async createNotification(data) {
+        return await this.call('/notifications', 'POST', data);
+    },
+
+    async bulkCreateNotifications(userIds, type, title, message, data = null) {
+        return await this.call('/notifications/bulk', 'POST', { userIds, type, title, message, data });
+    },
+
     async markNotificationRead(id) {
         return await this.call(`/notifications/${id}/read`, 'PUT');
     },
 
     async markAllNotificationsRead() {
         return await this.call('/notifications/read-all', 'PUT');
+    },
+
+    async deleteNotification(id) {
+        return await this.call(`/notifications/${id}`, 'DELETE');
     },
 
     async deleteAllNotifications() {
@@ -238,13 +251,28 @@ const API = {
         return response.data || [];
     },
 
+    async getFile(id) {
+        const response = await this.call(`/files/${id}`);
+        return response.data || response;
+    },
+
+    async getFilesByClass(classId) {
+        const response = await this.call(`/files/class/${classId}`);
+        return response.data || [];
+    },
+
     async uploadFile(formData) {
         const session = this.getSession();
-        if (!session?.token) throw new Error('Chưa đăng nhập');
+        if (!session || !session.token) {
+            throw new Error('Chưa đăng nhập');
+        }
 
         const response = await fetch(`${CONFIG.API_URL}/files/upload`, {
             method: 'POST',
-            headers: { 'Authorization': `Bearer ${session.token}` },
+            headers: {
+                'Authorization': `Bearer ${session.token}`
+                // Don't set Content-Type for FormData, browser will set it with boundary
+            },
             body: formData
         });
 
@@ -252,7 +280,12 @@ const API = {
             const error = await response.json();
             throw new Error(error.error || 'Upload failed');
         }
+
         return await response.json();
+    },
+
+    async updateFile(id, data) {
+        return await this.call(`/files/${id}`, 'PUT', data);
     },
 
     async deleteFile(id) {
@@ -269,6 +302,21 @@ const API = {
         const endpoint = year ? `/holidays?year=${year}` : '/holidays';
         const response = await this.call(endpoint);
         return response.data || [];
+    },
+
+    async getUpcomingHolidays(limit = 5) {
+        const response = await this.call(`/holidays/upcoming?limit=${limit}`);
+        return response.data || [];
+    },
+
+    async getHolidaysByRange(startDate, endDate) {
+        const response = await this.call(`/holidays/range?startDate=${startDate}&endDate=${endDate}`);
+        return response.data || [];
+    },
+
+    async getHoliday(id) {
+        const response = await this.call(`/holidays/${id}`);
+        return response.data || response;
     },
 
     async createHoliday(data) {
@@ -298,6 +346,26 @@ const API = {
     async getMyActivityLogs(limit = 50) {
         const response = await this.call(`/activity-logs/my?limit=${limit}`);
         return response.data || [];
+    },
+
+    async getActivityLogStats(startDate = null, endDate = null) {
+        let endpoint = '/activity-logs/stats';
+        const params = new URLSearchParams();
+        if (startDate) params.append('startDate', startDate);
+        if (endDate) params.append('endDate', endDate);
+        const queryString = params.toString();
+        if (queryString) endpoint += '?' + queryString;
+        const response = await this.call(endpoint);
+        return response.data || {};
+    },
+
+    async getActivityLogsByEntity(entityType, entityId) {
+        const response = await this.call(`/activity-logs/entity/${entityType}/${entityId}`);
+        return response.data || [];
+    },
+
+    async cleanupActivityLogs(days = 90) {
+        return await this.call(`/activity-logs/cleanup?days=${days}`, 'DELETE');
     },
 
     // ===== SESSIONS =====
@@ -470,8 +538,121 @@ const API = {
 
     logout() {
         localStorage.removeItem(CONFIG.SESSION_KEY);
-    }
+    },
 
+    // ===== ASSIGNMENTS API (BTVN) =====
+    async getAssignments() {
+        const response = await this.call('/assignments');
+        return response.data || [];
+    },
+
+    async getAssignmentsByClass(classId) {
+        const response = await this.call(`/assignments/class/${classId}`);
+        return response.data || [];
+    },
+
+    async getAssignment(id) {
+        const response = await this.call(`/assignments/${id}`);
+        return response.data;
+    },
+
+    async createAssignment(data) {
+        const response = await this.call('/assignments', 'POST', data);
+        return response.data;
+    },
+
+    async updateAssignment(id, data) {
+        const response = await this.call(`/assignments/${id}`, 'PUT', data);
+        return response.data;
+    },
+
+    async deleteAssignment(id) {
+        const response = await this.call(`/assignments/${id}`, 'DELETE');
+        return response;
+    },
+
+    // ===== SUBMISSIONS API (Bài nộp) =====
+    async getSubmissions(assignmentId) {
+        const response = await this.call(`/assignments/${assignmentId}/submissions`);
+        return response.data || [];
+    },
+
+    async getMySubmissions() {
+        const response = await this.call('/submissions/my');
+        return response.data || [];
+    },
+
+    async getSubmission(id) {
+        const response = await this.call(`/submissions/${id}`);
+        return response.data;
+    },
+
+    async createSubmission(data) {
+        const formData = new FormData();
+        formData.append('assignmentId', data.assignmentId);
+        formData.append('studentId', data.studentId);
+        if (data.file) {
+            formData.append('file', data.file);
+        }
+        if (data.content) {
+            formData.append('content', data.content);
+        }
+
+        const sessionData = localStorage.getItem(CONFIG.SESSION_KEY);
+        const session = sessionData ? JSON.parse(sessionData) : null;
+        const token = session?.token;
+
+        const response = await fetch(`${CONFIG.API_URL}/submissions`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+            body: formData
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Upload failed');
+        }
+
+        return await response.json();
+    },
+
+    async updateSubmission(id, data) {
+        const response = await this.call(`/submissions/${id}`, 'PUT', data);
+        return response.data;
+    },
+
+    async gradeSubmission(id, data) {
+        const response = await this.call(`/submissions/${id}/grade`, 'PUT', data);
+        return response.data;
+    },
+
+    async deleteSubmission(id) {
+        const response = await this.call(`/submissions/${id}`, 'DELETE');
+        return response;
+    },
+
+    // ===== GRADES API (Điểm số) =====
+    async getGradesByClass(classId) {
+        const response = await this.call(`/grades/class/${classId}`);
+        return response.data || [];
+    },
+
+    async getGradesByStudent(studentId) {
+        const response = await this.call(`/grades/student/${studentId}`);
+        return response.data || [];
+    },
+
+    async updateGrade(data) {
+        const response = await this.call('/grades', 'PUT', data);
+        return response.data;
+    },
+
+    async exportGrades(classId) {
+        const response = await this.call(`/grades/class/${classId}/export`);
+        return response.data;
+    }
 };
 
 // ===== CMAPI ALIAS (backward compatibility) =====
@@ -484,190 +665,6 @@ const CMAPI = {
     delete: (id) => API.deleteCM(id)
 };
 
-API.getNotifications = async function (userId = null) {
-    const url = userId ? `${this.BASE_URL}/notifications?userId=${userId}` : `${this.BASE_URL}/notifications`;
-    return await this.request(url);
-};
-
-API.getUnreadNotificationCount = async function () {
-    return await this.request(`${this.BASE_URL}/notifications/unread-count`);
-};
-
-API.createNotification = async function (data) {
-    return await this.request(`${this.BASE_URL}/notifications`, {
-        method: 'POST',
-        body: JSON.stringify(data)
-    });
-};
-
-API.bulkCreateNotifications = async function (userIds, type, title, message, data = null) {
-    return await this.request(`${this.BASE_URL}/notifications/bulk`, {
-        method: 'POST',
-        body: JSON.stringify({ userIds, type, title, message, data })
-    });
-};
-
-API.markNotificationRead = async function (id) {
-    return await this.request(`${this.BASE_URL}/notifications/${id}/read`, {
-        method: 'PUT'
-    });
-};
-
-API.markAllNotificationsRead = async function () {
-    return await this.request(`${this.BASE_URL}/notifications/read-all`, {
-        method: 'PUT'
-    });
-};
-
-API.deleteNotification = async function (id) {
-    return await this.request(`${this.BASE_URL}/notifications/${id}`, {
-        method: 'DELETE'
-    });
-};
-
-API.deleteAllNotifications = async function () {
-    return await this.request(`${this.BASE_URL}/notifications`, {
-        method: 'DELETE'
-    });
-};
-
-// ===== FILES API =====
-
-API.getFiles = async function (params = {}) {
-    const queryString = new URLSearchParams(params).toString();
-    const url = queryString ? `${this.BASE_URL}/files?${queryString}` : `${this.BASE_URL}/files`;
-    return await this.request(url);
-};
-
-API.getFile = async function (id) {
-    return await this.request(`${this.BASE_URL}/files/${id}`);
-};
-
-API.getFilesByClass = async function (classId) {
-    return await this.request(`${this.BASE_URL}/files/class/${classId}`);
-};
-
-API.uploadFile = async function (formData) {
-    const session = this.getSession();
-    if (!session || !session.token) {
-        throw new Error('Chưa đăng nhập');
-    }
-
-    const response = await fetch(`${this.BASE_URL}/files/upload`, {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${session.token}`
-            // Don't set Content-Type for FormData, browser will set it with boundary
-        },
-        body: formData
-    });
-
-    if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Upload failed');
-    }
-
-    return await response.json();
-};
-
-API.updateFile = async function (id, data) {
-    return await this.request(`${this.BASE_URL}/files/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify(data)
-    });
-};
-
-API.deleteFile = async function (id) {
-    return await this.request(`${this.BASE_URL}/files/${id}`, {
-        method: 'DELETE'
-    });
-};
-
-API.getFileStats = async function () {
-    return await this.request(`${this.BASE_URL}/files/stats`);
-};
-
-// ===== HOLIDAYS API =====
-
-API.getHolidays = async function (year = null) {
-    const url = year ? `${this.BASE_URL}/holidays?year=${year}` : `${this.BASE_URL}/holidays`;
-    return await this.request(url);
-};
-
-API.getUpcomingHolidays = async function (limit = 5) {
-    return await this.request(`${this.BASE_URL}/holidays/upcoming?limit=${limit}`);
-};
-
-API.getHolidaysByRange = async function (startDate, endDate) {
-    return await this.request(`${this.BASE_URL}/holidays/range?startDate=${startDate}&endDate=${endDate}`);
-};
-
-API.getHoliday = async function (id) {
-    return await this.request(`${this.BASE_URL}/holidays/${id}`);
-};
-
-API.createHoliday = async function (data) {
-    return await this.request(`${this.BASE_URL}/holidays`, {
-        method: 'POST',
-        body: JSON.stringify(data)
-    });
-};
-
-API.updateHoliday = async function (id, data) {
-    return await this.request(`${this.BASE_URL}/holidays/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify(data)
-    });
-};
-
-API.deleteHoliday = async function (id) {
-    return await this.request(`${this.BASE_URL}/holidays/${id}`, {
-        method: 'DELETE'
-    });
-};
-
-API.bulkCreateHolidays = async function (holidays) {
-    return await this.request(`${this.BASE_URL}/holidays/bulk`, {
-        method: 'POST',
-        body: JSON.stringify({ holidays })
-    });
-};
-
-// ===== ACTIVITY LOGS API =====
-
-API.getAllActivityLogs = async function (params = {}) {
-    const queryString = new URLSearchParams(params).toString();
-    const url = queryString ? `${this.BASE_URL}/activity-logs?${queryString}` : `${this.BASE_URL}/activity-logs`;
-    return await this.request(url);
-};
-
-API.getMyActivityLogs = async function (limit = 50) {
-    return await this.request(`${this.BASE_URL}/activity-logs/my?limit=${limit}`);
-};
-
-API.getActivityLogStats = async function (startDate = null, endDate = null) {
-    let url = `${this.BASE_URL}/activity-logs/stats`;
-    const params = new URLSearchParams();
-    if (startDate) params.append('startDate', startDate);
-    if (endDate) params.append('endDate', endDate);
-    const queryString = params.toString();
-    if (queryString) url += '?' + queryString;
-    return await this.request(url);
-};
-
-API.getActivityLogsByEntity = async function (entityType, entityId) {
-    return await this.request(`${this.BASE_URL}/activity-logs/entity/${entityType}/${entityId}`);
-};
-
-API.cleanupActivityLogs = async function (days = 90) {
-    return await this.request(`${this.BASE_URL}/activity-logs/cleanup?days=${days}`, {
-        method: 'DELETE'
-    });
-};
-
-// ===== EXPORT =====
-// Không cần export vì đang extend object API có sẵn
-
 // ===== EXPORT TO WINDOW =====
 window.API = API;
 window.CONFIG = CONFIG;
@@ -675,30 +672,3 @@ window.CMAPI = CMAPI;
 
 console.log('✅ API Client initialized');
 console.log('📡 API URL:', CONFIG.API_URL);
-// ✅ Export supplemental functions
-window.showNotifications = showNotifications;
-window.markAllNotificationsRead = markAllNotificationsRead;
-window.deleteAllNotifications = deleteAllNotifications;
-
-window.showFiles = showFiles;
-window.openUploadFileModal = openUploadFileModal;
-window.uploadFile = uploadFile;
-window.filterFiles = filterFiles;
-window.deleteFile = deleteFile;
-window.downloadFile = downloadFile;
-window.viewFile = viewFile;
-
-window.showHolidays = showHolidays;
-window.filterHolidays = filterHolidays;
-window.openAddHolidayModal = openAddHolidayModal;
-window.openEditHolidayModal = openEditHolidayModal;
-window.saveHoliday = saveHoliday;
-window.deleteHoliday = deleteHoliday;
-window.openImportHolidaysModal = openImportHolidaysModal;
-window.importVietnamHolidays2025 = importVietnamHolidays2025;
-
-window.showActivityLogs = showActivityLogs;
-window.filterLogs = filterLogs;
-window.viewLogDetail = viewLogDetail;
-
-console.log('✅ App.js v2.0 loaded successfully');
