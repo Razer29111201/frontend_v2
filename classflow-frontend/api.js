@@ -206,6 +206,99 @@ const API = {
     async deleteCM(id) {
         return await this.call(`/cms/${id}`, 'DELETE');
     },
+    // ===== NOTIFICATIONS API (THÊM MỚI) =====
+    async getNotifications(userId = null) {
+        const endpoint = userId ? `/notifications?userId=${userId}` : '/notifications';
+        const response = await this.call(endpoint);
+        return response.data || [];
+    },
+
+    async getUnreadNotificationCount() {
+        const response = await this.call('/notifications/unread-count');
+        return response.data || { count: 0 };
+    },
+
+    async markNotificationRead(id) {
+        return await this.call(`/notifications/${id}/read`, 'PUT');
+    },
+
+    async markAllNotificationsRead() {
+        return await this.call('/notifications/read-all', 'PUT');
+    },
+
+    async deleteAllNotifications() {
+        return await this.call('/notifications', 'DELETE');
+    },
+
+    // ===== FILES API =====
+    async getFiles(params = {}) {
+        const queryString = new URLSearchParams(params).toString();
+        const endpoint = queryString ? `/files?${queryString}` : '/files';
+        const response = await this.call(endpoint);
+        return response.data || [];
+    },
+
+    async uploadFile(formData) {
+        const session = this.getSession();
+        if (!session?.token) throw new Error('Chưa đăng nhập');
+
+        const response = await fetch(`${CONFIG.API_URL}/files/upload`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${session.token}` },
+            body: formData
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Upload failed');
+        }
+        return await response.json();
+    },
+
+    async deleteFile(id) {
+        return await this.call(`/files/${id}`, 'DELETE');
+    },
+
+    async getFileStats() {
+        const response = await this.call('/files/stats');
+        return response.data || { fileCount: 0, totalSize: 0 };
+    },
+
+    // ===== HOLIDAYS API =====
+    async getHolidays(year = null) {
+        const endpoint = year ? `/holidays?year=${year}` : '/holidays';
+        const response = await this.call(endpoint);
+        return response.data || [];
+    },
+
+    async createHoliday(data) {
+        return await this.call('/holidays', 'POST', data);
+    },
+
+    async updateHoliday(id, data) {
+        return await this.call(`/holidays/${id}`, 'PUT', data);
+    },
+
+    async deleteHoliday(id) {
+        return await this.call(`/holidays/${id}`, 'DELETE');
+    },
+
+    async bulkCreateHolidays(holidays) {
+        return await this.call('/holidays/bulk', 'POST', { holidays });
+    },
+
+    // ===== ACTIVITY LOGS API =====
+    async getAllActivityLogs(params = {}) {
+        const queryString = new URLSearchParams(params).toString();
+        const endpoint = queryString ? `/activity-logs?${queryString}` : '/activity-logs';
+        const response = await this.call(endpoint);
+        return response.data || [];
+    },
+
+    async getMyActivityLogs(limit = 50) {
+        const response = await this.call(`/activity-logs/my?limit=${limit}`);
+        return response.data || [];
+    },
 
     // ===== SESSIONS =====
     async getSessions(classId) {
@@ -390,12 +483,6 @@ const CMAPI = {
     update: (id, data) => API.updateCM(id, data),
     delete: (id) => API.deleteCM(id)
 };
-// ===== API SUPPLEMENTS - CLASSFLOW LMS =====
-// Phần bổ sung cho api.js: Notifications, Files, Holidays, Activity Logs
-
-// Thêm vào object API trong file api.js:
-
-// ===== NOTIFICATIONS API =====
 
 API.getNotifications = async function (userId = null) {
     const url = userId ? `${this.BASE_URL}/notifications?userId=${userId}` : `${this.BASE_URL}/notifications`;
@@ -588,3 +675,30 @@ window.CMAPI = CMAPI;
 
 console.log('✅ API Client initialized');
 console.log('📡 API URL:', CONFIG.API_URL);
+// ✅ Export supplemental functions
+window.showNotifications = showNotifications;
+window.markAllNotificationsRead = markAllNotificationsRead;
+window.deleteAllNotifications = deleteAllNotifications;
+
+window.showFiles = showFiles;
+window.openUploadFileModal = openUploadFileModal;
+window.uploadFile = uploadFile;
+window.filterFiles = filterFiles;
+window.deleteFile = deleteFile;
+window.downloadFile = downloadFile;
+window.viewFile = viewFile;
+
+window.showHolidays = showHolidays;
+window.filterHolidays = filterHolidays;
+window.openAddHolidayModal = openAddHolidayModal;
+window.openEditHolidayModal = openEditHolidayModal;
+window.saveHoliday = saveHoliday;
+window.deleteHoliday = deleteHoliday;
+window.openImportHolidaysModal = openImportHolidaysModal;
+window.importVietnamHolidays2025 = importVietnamHolidays2025;
+
+window.showActivityLogs = showActivityLogs;
+window.filterLogs = filterLogs;
+window.viewLogDetail = viewLogDetail;
+
+console.log('✅ App.js v2.0 loaded successfully');

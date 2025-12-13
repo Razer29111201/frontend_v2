@@ -86,7 +86,9 @@ function hasPermission(action, resource, operation = 'view') {
     if (action === 'export') return perms.export === true;
     return perms[resource] && perms[resource][operation] === true;
 }
-
+if (currentUser) {
+    updateUnreadBadge();
+}
 // ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', () => {
     checkSession();
@@ -317,24 +319,39 @@ async function loadDashboard() {
     try {
         showLoading();
 
-        [classes, students, teachers, cms] = await Promise.all([
+        // ✅ Load thêm notifications và files
+        const [
+            classesData,
+            studentsData,
+            teachersData,
+            cmsData,
+            notificationsData,
+            filesData
+        ] = await Promise.all([
             API.getClasses().catch(() => []),
             API.getStudents().catch(() => []),
             API.getTeachers().catch(() => []),
-            API.getCMs().catch(() => [])
+            API.getCMs().catch(() => []),
+            API.getUnreadNotificationCount().catch(() => ({ count: 0 })),
+            API.getFileStats().catch(() => ({ fileCount: 0 }))
         ]);
 
         // Normalize data
-        classes = normalizeClasses(classes);
-        students = normalizeStudents(students);
+        classes = normalizeClasses(classesData);
+        students = normalizeStudents(studentsData);
+        teachers = teachersData;
+        cms = cmsData;
 
         // Filter by role
         let filteredClasses = filterClassesByRole(classes);
 
-        // Update stats
+        // ✅ Update ALL stats (thêm 3 dòng mới)
         document.getElementById('totalClasses').textContent = filteredClasses.length;
         document.getElementById('totalStudents').textContent = students.length;
         document.getElementById('totalTeachers').textContent = teachers.length;
+        document.getElementById('totalCMs').textContent = cms.length;
+        document.getElementById('totalNotifications').textContent = notificationsData.count || 0;
+        document.getElementById('totalFiles').textContent = filesData.fileCount || 0;
 
         // Render recent classes
         renderClassCards(filteredClasses.slice(0, 6), 'dashboardClasses');
@@ -2022,11 +2039,13 @@ async function updateUnreadBadge() {
         if (response.success) {
             unreadCount = response.data.count;
             const badge = document.getElementById('unreadBadge');
-            if (unreadCount > 0) {
-                badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
-                badge.style.display = 'inline-block';
-            } else {
-                badge.style.display = 'none';
+            if (badge) {
+                if (unreadCount > 0) {
+                    badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+                    badge.style.display = 'inline-block';
+                } else {
+                    badge.style.display = 'none';
+                }
             }
         }
     } catch (error) {
@@ -2034,12 +2053,8 @@ async function updateUnreadBadge() {
     }
 }
 
+
 // Poll for new notifications every 30 seconds
-setInterval(() => {
-    if (currentUser) {
-        updateUnreadBadge();
-    }
-}, 30000);
 
 // ===== 2. FILES =====
 
@@ -2645,6 +2660,9 @@ function formatDateTime(dateStr) {
 
 // ===== INITIALIZATION =====
 // Load unread badge when user logs in
-if (currentUser) {
-    updateUnreadBadge();
-}
+
+setInterval(() => {
+    if (currentUser) {
+        updateUnreadBadge();
+    }
+}, 30000);

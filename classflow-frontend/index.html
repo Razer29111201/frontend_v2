@@ -256,65 +256,110 @@
                     </table>
                 </div>
             </section>
-
-            <!-- ===== TEACHERS ===== -->
-            <section id="teachersContent" class="content-section">
-                <div class="content-header">
-                    <h1><i class="fas fa-chalkboard-teacher"></i> Quản lý Giáo viên</h1>
-                    <div class="header-actions">
-                        <button class="btn btn-secondary btn-sm" onclick="exportTeachers()"><i
-                                class="fas fa-file-excel"></i> Export</button>
-                        <button class="btn btn-primary" onclick="openAddTeacherModal()"><i class="fas fa-plus"></i> Thêm
-                            giáo viên</button>
+            <div class="stats-grid">
+                <div class="stat-card green">
+                    <div class="stat-icon"><i class="fas fa-chalkboard"></i></div>
+                    <div class="stat-info">
+                        <h3 id="totalClasses">0</h3>
+                        <p>Lớp học</p>
                     </div>
                 </div>
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Mã GV</th>
-                                <th>Họ tên</th>
-                                <th>Email</th>
-                                <th>SĐT</th>
-                                <th>Chuyên môn</th>
-                                <th>Trạng thái</th>
-                                <th style="width:100px;">Thao tác</th>
-                            </tr>
-                        </thead>
-                        <tbody id="teachersTable"></tbody>
-                    </table>
-                </div>
-            </section>
-
-            <!-- ===== CMS ===== -->
-            <section id="cmsContent" class="content-section">
-                <div class="content-header">
-                    <h1><i class="fas fa-user-shield"></i> Quản lý Class Manager</h1>
-                    <div class="header-actions">
-                        <button class="btn btn-secondary btn-sm" onclick="exportCMs()"><i class="fas fa-file-excel"></i>
-                            Export</button>
-                        <button class="btn btn-primary" onclick="openAddCMModal()"><i class="fas fa-plus"></i> Thêm
-                            CM</button>
+                <div class="stat-card blue">
+                    <div class="stat-icon"><i class="fas fa-user-graduate"></i></div>
+                    <div class="stat-info">
+                        <h3 id="totalStudents">0</h3>
+                        <p>Học sinh</p>
                     </div>
                 </div>
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Mã CM</th>
-                                <th>Họ tên</th>
-                                <th>Email</th>
-                                <th>SĐT</th>
-                                <th>Số lớp</th>
-                                <th>Trạng thái</th>
-                                <th style="width:120px;">Thao tác</th>
-                            </tr>
-                        </thead>
-                        <tbody id="cmsTable"></tbody>
-                    </table>
+                <div class="stat-card purple">
+                    <div class="stat-icon"><i class="fas fa-chalkboard-teacher"></i></div>
+                    <div class="stat-info">
+                        <h3 id="totalTeachers">0</h3>
+                        <p>Giáo viên</p>
+                    </div>
                 </div>
-            </section>
-        </main>
+                <!-- NEW STAT CARDS -->
+                <div class="stat-card orange">
+                    <div class="stat-icon"><i class="fas fa-user-shield"></i></div>
+                    <div class="stat-info">
+                        <h3 id="totalCMs">0</h3>
+                        <p>Class Manager</p>
+                    </div>
+                </div>
+                <div class="stat-card red">
+                    <div class="stat-icon"><i class="fas fa-bell"></i></div>
+                    <div class="stat-info">
+                        <h3 id="totalNotifications">0</h3>
+                        <p>Thông báo chưa đọc</p>
+                    </div>
+                </div>
+                <div class="stat-card cyan">
+                    <div class="stat-icon"><i class="fas fa-folder"></i></div>
+                    <div class="stat-info">
+                        <h3 id="totalFiles">0</h3>
+                        <p>Tài liệu</p>
+                    </div>
+                </div>
+            </div> <!-- Đây là tag đóng của stats-grid -->
+    </div>
+    <!-- ===== TEACHERS ===== -->
+    <section id="teachersContent" class="content-section">
+        <div class="content-header">
+            <h1><i class="fas fa-chalkboard-teacher"></i> Quản lý Giáo viên</h1>
+            <div class="header-actions">
+                <button class="btn btn-secondary btn-sm" onclick="exportTeachers()"><i class="fas fa-file-excel"></i>
+                    Export</button>
+                <button class="btn btn-primary" onclick="openAddTeacherModal()"><i class="fas fa-plus"></i> Thêm
+                    giáo viên</button>
+            </div>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Mã GV</th>
+                        <th>Họ tên</th>
+                        <th>Email</th>
+                        <th>SĐT</th>
+                        <th>Chuyên môn</th>
+                        <th>Trạng thái</th>
+                        <th style="width:100px;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="teachersTable"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- ===== CMS ===== -->
+    <section id="cmsContent" class="content-section">
+        <div class="content-header">
+            <h1><i class="fas fa-user-shield"></i> Quản lý Class Manager</h1>
+            <div class="header-actions">
+                <button class="btn btn-secondary btn-sm" onclick="exportCMs()"><i class="fas fa-file-excel"></i>
+                    Export</button>
+                <button class="btn btn-primary" onclick="openAddCMModal()"><i class="fas fa-plus"></i> Thêm
+                    CM</button>
+            </div>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Mã CM</th>
+                        <th>Họ tên</th>
+                        <th>Email</th>
+                        <th>SĐT</th>
+                        <th>Số lớp</th>
+                        <th>Trạng thái</th>
+                        <th style="width:120px;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="cmsTable"></tbody>
+            </table>
+        </div>
+    </section>
+    </main>
     </div>
 
     <!-- ==================== MODALS ==================== -->
