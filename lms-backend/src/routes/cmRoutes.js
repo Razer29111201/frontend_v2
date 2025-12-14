@@ -1,17 +1,35 @@
+// src/routes/cmRoutes.js
 import express from 'express';
 import CMController from '../controllers/cmController.js';
-import { authenticateToken, isAdmin } from '../middleware/auth.js';
-import { idParamValidator } from '../utils/validators.js';
+import { authenticateToken, authorize } from '../middleware/auth.js';
 
 const router = express.Router();
 
-router.get('/', authenticateToken, CMController.getAll);
-router.get('/active', authenticateToken, CMController.getActive);
-router.get('/:id', authenticateToken, idParamValidator, CMController.getOne);
-router.get('/:id/details', authenticateToken, idParamValidator, CMController.getDetails);
-router.get('/:id/statistics', authenticateToken, idParamValidator, CMController.getStatistics);
-router.post('/', authenticateToken, isAdmin, CMController.create);
-router.put('/:id', authenticateToken, isAdmin, idParamValidator, CMController.update);
-router.delete('/:id', authenticateToken, isAdmin, idParamValidator, CMController.delete);
+// All routes require authentication
+router.use(authenticateToken);
+
+// GET routes
+router.get('/', CMController.getAll);
+router.get('/:id', CMController.getOne);
+router.get('/:id/classes', CMController.getClasses);
+router.get('/:id/statistics', CMController.getStatistics);
+
+// POST routes (admin only)
+router.post('/',
+    authorize(['admin']),
+    CMController.create
+);
+
+// PUT routes (admin only)
+router.put('/:id',
+    authorize(['admin']),
+    CMController.update
+);
+
+// DELETE routes (admin only)
+router.delete('/:id',
+    authorize(['admin']),
+    CMController.delete
+);
 
 export default router;

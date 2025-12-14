@@ -1,103 +1,235 @@
 // src/controllers/cmController.js
 import { query } from '../config/database.js';
+import logger from '../utils/logger.js';
 
 class CMController {
+    // Get all CMs (Class Managers)
     static async getAll(req, res) {
         try {
-            const cms = await query('SELECT * FROM cms ORDER BY name ASC');
-            const classCounts = await query('SELECT cm_id, COUNT(*) as count FROM classes WHERE cm_id IS NOT NULL GROUP BY cm_id');
-            const countMap = {};
-            classCounts.forEach(r => { countMap[r.cm_id] = r.count; });
+            const cms = await query(`
+                SELECT 
+                    id,
+                    username,
+                    email,
+                    name,
+                    phone,
+                    avatar,
+                    is_active,
+                    created_at
+                FROM users
+                WHERE role = 'cm'
+                ORDER BY name
+            `);
 
-            res.json({ success: true, data: cms.map(cm => ({
-                id: cm.id, code: cm.code, name: cm.name, email: cm.email, phone: cm.phone,
-                active: cm.active === 1, classCount: countMap[cm.id] || 0, createdAt: cm.created_at
-            }))});
+            res.json({
+                success: true,
+                data: cms
+            });
         } catch (error) {
-            res.status(500).json({ success: false, error: error.message });
+            logger.error('Get CMs error:', error);
+            res.status(500).json({
+                success: false,
+                error: error.message
+            });
         }
     }
 
+    // Get CM by ID
     static async getOne(req, res) {
         try {
-            const [cm] = await query('SELECT * FROM cms WHERE id = ?', [req.params.id]);
-            if (!cm) return res.status(404).json({ success: false, error: 'Không tìm thấy CM' });
-            res.json({ success: true, data: { id: cm.id, code: cm.code, name: cm.name, email: cm.email, phone: cm.phone, active: cm.active === 1 } });
-        } catch (error) {
-            res.status(500).json({ success: false, error: error.message });
-        }
-    }
+            const [cm] = await query(`
+                SELECT 
+                    id,
+                    username,
+                    email,
+                    name,
+                    phone,
+                    avatar,
+                    is_active,
+                    created_at
+                FROM users
+                WHERE id = ? AND role = 'cm'
+            `, [req.params.id]);
 
-    static async create(req, res) {
-        try {
-            const { code, name, email, phone, active } = req.body;
-            const result = await query('INSERT INTO cms (code, name, email, phone, active) VALUES (?, ?, ?, ?, ?)', [code, name, email, phone, active !== false]);
-            res.status(201).json({ success: true, data: { id: result.insertId, code, name, email, phone, active: active !== false, classCount: 0 } });
-        } catch (error) {
-            res.status(500).json({ success: false, error: error.message });
-        }
-    }
-
-    static async update(req, res) {
-        try {
-            const { code, name, email, phone, active } = req.body;
-            const result = await query('UPDATE cms SET code=?, name=?, email=?, phone=?, active=? WHERE id=?', [code, name, email, phone, active !== false, req.params.id]);
-            if (result.affectedRows === 0) return res.status(404).json({ success: false, error: 'Không tìm thấy CM' });
-            res.json({ success: true, data: { id: parseInt(req.params.id), code, name, email, phone, active } });
-        } catch (error) {
-            res.status(500).json({ success: false, error: error.message });
-        }
-    }
-
-    static async delete(req, res) {
-        try {
-            await query('UPDATE classes SET cm = NULL, cm_id = NULL WHERE cm_id = ?', [req.params.id]);
-            const result = await query('DELETE FROM cms WHERE id = ?', [req.params.id]);
-            if (result.affectedRows === 0) return res.status(404).json({ success: false, error: 'Không tìm thấy CM' });
-            res.json({ success: true, message: 'Đã xóa CM thành công' });
-        } catch (error) {
-            res.status(500).json({ success: false, error: error.message });
-        }
-    }
-
-    static async getActive(req, res) {
-        try {
-            const cms = await query('SELECT * FROM cms WHERE active = 1 ORDER BY name ASC');
-            res.json({ success: true, data: cms.map(cm => ({ id: cm.id, code: cm.code, name: cm.name, email: cm.email, phone: cm.phone })) });
-        } catch (error) {
-            res.status(500).json({ success: false, error: error.message });
-        }
-    }
-
-    static async getDetails(req, res) {
-        try {
-            const [cm] = await query('SELECT * FROM cms WHERE id = ?', [req.params.id]);
-            if (!cm) return res.status(404).json({ success: false, error: 'Không tìm thấy CM' });
-            const classes = await query('SELECT * FROM classes WHERE cm_id = ?', [req.params.id]);
-            res.json({ success: true, data: { ...cm, active: cm.active === 1, classes } });
-        } catch (error) {
-            res.status(500).json({ success: false, error: error.message });
-        }
-    }
-
-    static async getStatistics(req, res) {
-        try {
-            const [cm] = await query('SELECT * FROM cms WHERE id = ?', [req.params.id]);
-            if (!cm) return res.status(404).json({ success: false, error: 'Không tìm thấy CM' });
-
-            const classes = await query('SELECT * FROM classes WHERE cm_id = ?', [req.params.id]);
-            let totalStudents = 0, totalSessions = 0;
-            
-            for (const cls of classes) {
-                const [sc] = await query('SELECT COUNT(*) as count FROM students WHERE class_id = ?', [cls.id]);
-                const [ss] = await query('SELECT COUNT(*) as count FROM sessions WHERE class_id = ?', [cls.id]);
-                totalStudents += sc[0]?.count || 0;
-                totalSessions += ss[0]?.count || 0;
+            if (!cm) {
+                return res.status(404).json({
+                    success: false,
+                    error: 'Không tìm thấy CM'
+                });
             }
 
-            res.json({ success: true, data: { classCount: classes.length, studentCount: totalStudents, sessionCount: totalSessions, classes: classes.map(c => ({ id: c.id, code: c.code, name: c.name })) } });
+            res.json({
+                success: true,
+                data: cm
+            });
         } catch (error) {
-            res.status(500).json({ success: false, error: error.message });
+            logger.error('Get CM error:', error);
+            res.status(500).json({
+                success: false,
+                error: error.message
+            });
+        }
+    }
+
+    // Get classes managed by CM
+    static async getClasses(req, res) {
+        try {
+            const { id } = req.params;
+
+            const classes = await query(`
+                SELECT 
+                    c.*,
+                    u.name as teacher_name,
+                    COUNT(DISTINCT s.id) as total_students
+                FROM classes c
+                LEFT JOIN users u ON c.teacher_id = u.id
+                LEFT JOIN students s ON c.id = s.class_id AND s.status = 'active'
+                WHERE c.cm_id = ?
+                GROUP BY c.id
+                ORDER BY c.status, c.start_date DESC
+            `, [id]);
+
+            res.json({
+                success: true,
+                data: classes
+            });
+        } catch (error) {
+            logger.error('Get CM classes error:', error);
+            res.status(500).json({
+                success: false,
+                error: error.message
+            });
+        }
+    }
+
+    // Create CM
+    static async create(req, res) {
+        try {
+            const { username, password, email, name, phone } = req.body;
+
+            // Check if username or email already exists
+            const [existing] = await query(
+                'SELECT id FROM users WHERE username = ? OR email = ?',
+                [username, email]
+            );
+
+            if (existing) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Username hoặc email đã tồn tại'
+                });
+            }
+
+            // Hash password
+            const bcrypt = require('bcrypt');
+            const hashedPassword = await bcrypt.hash(password, 10);
+
+            // Insert user
+            const result = await query(
+                `INSERT INTO users (username, password, email, name, phone, role)
+                 VALUES (?, ?, ?, ?, ?, 'cm')`,
+                [username, hashedPassword, email, name, phone]
+            );
+
+            res.status(201).json({
+                success: true,
+                message: 'Tạo CM thành công',
+                data: { id: result.insertId, username, email, name }
+            });
+        } catch (error) {
+            logger.error('Create CM error:', error);
+            res.status(500).json({
+                success: false,
+                error: error.message
+            });
+        }
+    }
+
+    // Update CM
+    static async update(req, res) {
+        try {
+            const { id } = req.params;
+            const { email, name, phone, is_active } = req.body;
+
+            await query(
+                `UPDATE users 
+                 SET email = ?, name = ?, phone = ?, is_active = ?
+                 WHERE id = ? AND role = 'cm'`,
+                [email, name, phone, is_active, id]
+            );
+
+            res.json({
+                success: true,
+                message: 'Cập nhật CM thành công'
+            });
+        } catch (error) {
+            logger.error('Update CM error:', error);
+            res.status(500).json({
+                success: false,
+                error: error.message
+            });
+        }
+    }
+
+    // Delete CM
+    static async delete(req, res) {
+        try {
+            const result = await query(
+                'DELETE FROM users WHERE id = ? AND role = "cm"',
+                [req.params.id]
+            );
+
+            if (result.affectedRows === 0) {
+                return res.status(404).json({
+                    success: false,
+                    error: 'Không tìm thấy CM'
+                });
+            }
+
+            res.json({
+                success: true,
+                message: 'Đã xóa CM'
+            });
+        } catch (error) {
+            logger.error('Delete CM error:', error);
+            res.status(500).json({
+                success: false,
+                error: error.message
+            });
+        }
+    }
+
+    // Get CM statistics
+    static async getStatistics(req, res) {
+        try {
+            const { id } = req.params;
+
+            const [stats] = await query(`
+                SELECT 
+                    COUNT(DISTINCT c.id) as total_classes,
+                    COUNT(DISTINCT s.id) as total_students,
+                    COUNT(DISTINCT CASE WHEN c.status = 'ongoing' THEN c.id END) as ongoing_classes,
+                    COUNT(DISTINCT CASE WHEN c.status = 'completed' THEN c.id END) as completed_classes
+                FROM classes c
+                LEFT JOIN students s ON c.id = s.class_id AND s.status = 'active'
+                WHERE c.cm_id = ?
+            `, [id]);
+
+            res.json({
+                success: true,
+                data: stats[0] || {
+                    total_classes: 0,
+                    total_students: 0,
+                    ongoing_classes: 0,
+                    completed_classes: 0
+                }
+            });
+        } catch (error) {
+            logger.error('Get CM statistics error:', error);
+            res.status(500).json({
+                success: false,
+                error: error.message
+            });
         }
     }
 }

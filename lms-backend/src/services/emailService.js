@@ -19,7 +19,7 @@ const createTransporter = () => {
 export const sendEmail = async ({ to, subject, html, text }) => {
     try {
         const transporter = createTransporter();
-        
+
         const info = await transporter.sendMail({
             from: process.env.EMAIL_FROM || process.env.SMTP_USER,
             to,
@@ -282,10 +282,225 @@ export const sendWelcomeEmail = async (email, name, role) => {
     });
 };
 
+export const sendAssignmentNotification = async (email, studentName, className, assignmentTitle, deadline) => {
+    const deadlineDate = new Date(deadline);
+    const formattedDeadline = deadlineDate.toLocaleString('vi-VN', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+
+    const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <style>
+            body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { 
+                background: linear-gradient(135deg, #f59e0b, #d97706); 
+                color: white; 
+                padding: 30px; 
+                text-align: center; 
+                border-radius: 10px 10px 0 0; 
+            }
+            .content { background: #f9fafb; padding: 30px; border: 1px solid #e5e7eb; }
+            .assignment-box { 
+                background: white; 
+                padding: 25px; 
+                border-radius: 12px; 
+                margin: 20px 0;
+                border-left: 4px solid #f59e0b;
+            }
+            .deadline-badge { 
+                display: inline-block; 
+                padding: 8px 16px; 
+                background: #fef3c7; 
+                color: #92400e; 
+                border-radius: 20px; 
+                font-weight: 600; 
+                font-size: 14px;
+            }
+            .info-row { 
+                padding: 10px 0; 
+                border-bottom: 1px solid #e5e7eb; 
+            }
+            .info-row:last-child { border-bottom: none; }
+            .label { color: #6b7280; font-weight: 500; }
+            .value { color: #111827; font-weight: 600; }
+            .btn { 
+                display: inline-block; 
+                padding: 14px 28px; 
+                background: #f59e0b; 
+                color: white; 
+                text-decoration: none; 
+                border-radius: 8px; 
+                font-weight: 600;
+                margin-top: 20px;
+            }
+            .footer { text-align: center; padding: 20px; color: #6b7280; font-size: 14px; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>📚 Bài Tập Mới</h1>
+                <p>ClassFlow - Hệ thống quản lý lớp học</p>
+            </div>
+            <div class="content">
+                <h2>Xin chào ${studentName}!</h2>
+                <p>Giáo viên vừa giao bài tập mới cho lớp <strong>${className}</strong>.</p>
+                
+                <div class="assignment-box">
+                    <div class="info-row">
+                        <span class="label">Bài tập:</span>
+                        <div class="value" style="margin-top: 5px; font-size: 18px;">${assignmentTitle}</div>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Lớp:</span>
+                        <span class="value">${className}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Hạn nộp:</span>
+                        <div style="margin-top: 5px;">
+                            <span class="deadline-badge">⏰ ${formattedDeadline}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <p style="background: #fef3c7; padding: 15px; border-radius: 8px; border-left: 4px solid #f59e0b; margin: 20px 0;">
+                    <strong>⚠️ Lưu ý:</strong> Hãy hoàn thành và nộp bài đúng hạn để tránh bị trừ điểm. 
+                    Nếu nộp muộn, hệ thống sẽ tự động đánh dấu.
+                </p>
+                
+                <p>Đăng nhập vào hệ thống ClassFlow để xem chi tiết bài tập và nộp bài.</p>
+                
+                <div style="text-align: center;">
+                    <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}" class="btn">
+                        Xem Bài Tập
+                    </a>
+                </div>
+                
+                <p style="margin-top: 30px;">Chúc bạn học tốt!<br>Đội ngũ ClassFlow</p>
+            </div>
+            <div class="footer">
+                <p>Email này được gửi tự động từ hệ thống ClassFlow</p>
+                <p style="font-size: 12px; color: #9ca3af;">
+                    Nếu bạn không phải là ${studentName}, vui lòng bỏ qua email này.
+                </p>
+            </div>
+        </div>
+    </body>
+    </html>
+    `;
+
+    return sendEmail({
+        to: email,
+        subject: `[ClassFlow] Bài tập mới: ${assignmentTitle}`,
+        html,
+        text: `Bài tập mới: ${assignmentTitle}\nLớp: ${className}\nHạn nộp: ${formattedDeadline}\n\nĐăng nhập ClassFlow để xem chi tiết.`
+    });
+};
+
+// Send submission reminder (for assignments nearing deadline)
+export const sendSubmissionReminder = async (email, studentName, assignmentTitle, deadline, hoursRemaining) => {
+    const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <style>
+            body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { 
+                background: linear-gradient(135deg, #ef4444, #dc2626); 
+                color: white; 
+                padding: 30px; 
+                text-align: center; 
+                border-radius: 10px 10px 0 0; 
+            }
+            .content { background: #f9fafb; padding: 30px; border: 1px solid #e5e7eb; }
+            .warning-box { 
+                background: #fee2e2; 
+                border: 2px solid #ef4444; 
+                border-radius: 12px; 
+                padding: 25px; 
+                margin: 20px 0;
+                text-align: center;
+            }
+            .countdown { 
+                font-size: 48px; 
+                font-weight: 700; 
+                color: #dc2626;
+                margin: 10px 0;
+            }
+            .btn { 
+                display: inline-block; 
+                padding: 14px 28px; 
+                background: #ef4444; 
+                color: white; 
+                text-decoration: none; 
+                border-radius: 8px; 
+                font-weight: 600;
+            }
+            .footer { text-align: center; padding: 20px; color: #6b7280; font-size: 14px; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>⚠️ Nhắc Nhở Nộp Bài</h1>
+            </div>
+            <div class="content">
+                <h2>Xin chào ${studentName}!</h2>
+                <p>Bài tập <strong>"${assignmentTitle}"</strong> sắp hết hạn nộp!</p>
+                
+                <div class="warning-box">
+                    <p style="margin: 0; font-size: 16px; color: #7f1d1d;">Thời gian còn lại</p>
+                    <div class="countdown">${hoursRemaining}h</div>
+                    <p style="margin: 0; color: #991b1b;">Hạn nộp: ${new Date(deadline).toLocaleString('vi-VN')}</p>
+                </div>
+                
+                <p style="background: #fef2f2; padding: 15px; border-radius: 8px; border-left: 4px solid #ef4444;">
+                    <strong>🔔 Hãy nộp bài ngay!</strong><br>
+                    Nộp muộn sẽ bị trừ điểm và ảnh hưởng đến kết quả học tập.
+                </p>
+                
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}" class="btn">
+                        Nộp Bài Ngay
+                    </a>
+                </div>
+                
+                <p style="margin-top: 30px;">Chúc bạn hoàn thành tốt bài tập!<br>Đội ngũ ClassFlow</p>
+            </div>
+            <div class="footer">
+                <p>Email nhắc nhở tự động từ hệ thống ClassFlow</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    `;
+
+    return sendEmail({
+        to: email,
+        subject: `[ClassFlow] ⚠️ Nhắc nhở: ${assignmentTitle} - Còn ${hoursRemaining}h`,
+        html,
+        text: `Nhắc nhở: Bài tập "${assignmentTitle}" sắp hết hạn!\nCòn ${hoursRemaining} giờ nữa.\nHạn nộp: ${new Date(deadline).toLocaleString('vi-VN')}\nNộp bài ngay tại ClassFlow.`
+    });
+};
+
+// Export all functions including the new ones
 export default {
     sendEmail,
     sendAttendanceNotification,
     sendGradeNotification,
     sendPasswordResetEmail,
-    sendWelcomeEmail
+    sendWelcomeEmail,
+    sendAssignmentNotification,
+    sendSubmissionReminder
 };

@@ -8,7 +8,7 @@ class NotificationController {
         try {
             const { userId } = req.query;
             const targetUserId = userId || req.user.id;
-            
+
             const notifications = await query(
                 `SELECT * FROM notifications 
                  WHERE user_id = ? 
@@ -16,9 +16,9 @@ class NotificationController {
                  LIMIT 50`,
                 [targetUserId]
             );
-            
-            res.json({ 
-                success: true, 
+
+            res.json({
+                success: true,
                 data: notifications.map(n => ({
                     id: n.id,
                     userId: n.user_id,
@@ -44,9 +44,9 @@ class NotificationController {
                 'SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0',
                 [req.user.id]
             );
-            
-            res.json({ 
-                success: true, 
+
+            res.json({
+                success: true,
                 data: { count: result[0]?.count || 0 }
             });
         } catch (error) {
@@ -58,22 +58,22 @@ class NotificationController {
     static async create(req, res) {
         try {
             const { userId, type, title, message, data, sendEmail } = req.body;
-            
+
             const result = await query(
                 `INSERT INTO notifications (user_id, type, title, message, data, sent_email)
                  VALUES (?, ?, ?, ?, ?, ?)`,
                 [userId, type || 'system', title, message, data ? JSON.stringify(data) : null, sendEmail || false]
             );
 
-            res.status(201).json({ 
-                success: true, 
-                data: { 
-                    id: result.insertId, 
-                    userId, 
-                    type, 
-                    title, 
-                    message 
-                } 
+            res.status(201).json({
+                success: true,
+                data: {
+                    id: result.insertId,
+                    userId,
+                    type,
+                    title,
+                    message
+                }
             });
         } catch (error) {
             logger.error('Create notification error:', error);
@@ -85,16 +85,16 @@ class NotificationController {
     static async markAsRead(req, res) {
         try {
             const { id } = req.params;
-            
+
             const result = await query(
                 'UPDATE notifications SET is_read = 1 WHERE id = ? AND user_id = ?',
                 [id, req.user.id]
             );
-            
+
             if (result.affectedRows === 0) {
                 return res.status(404).json({ success: false, error: 'Không tìm thấy thông báo' });
             }
-            
+
             res.json({ success: true, message: 'Đã đánh dấu đã đọc' });
         } catch (error) {
             res.status(500).json({ success: false, error: error.message });
@@ -108,7 +108,7 @@ class NotificationController {
                 'UPDATE notifications SET is_read = 1 WHERE user_id = ? AND is_read = 0',
                 [req.user.id]
             );
-            
+
             res.json({ success: true, message: 'Đã đánh dấu tất cả đã đọc' });
         } catch (error) {
             res.status(500).json({ success: false, error: error.message });
@@ -122,11 +122,11 @@ class NotificationController {
                 'DELETE FROM notifications WHERE id = ? AND user_id = ?',
                 [req.params.id, req.user.id]
             );
-            
+
             if (result.affectedRows === 0) {
                 return res.status(404).json({ success: false, error: 'Không tìm thấy thông báo' });
             }
-            
+
             res.json({ success: true, message: 'Đã xóa thông báo' });
         } catch (error) {
             res.status(500).json({ success: false, error: error.message });
@@ -147,7 +147,7 @@ class NotificationController {
     static async bulkCreate(req, res) {
         try {
             const { userIds, type, title, message, data, sendEmail } = req.body;
-            
+
             if (!Array.isArray(userIds) || userIds.length === 0) {
                 return res.status(400).json({ success: false, error: 'userIds phải là mảng không rỗng' });
             }
@@ -162,8 +162,8 @@ class NotificationController {
                 }
             });
 
-            res.status(201).json({ 
-                success: true, 
+            res.status(201).json({
+                success: true,
                 message: `Đã tạo ${userIds.length} thông báo`,
                 data: { count: userIds.length }
             });

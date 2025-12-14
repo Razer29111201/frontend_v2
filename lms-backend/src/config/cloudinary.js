@@ -16,7 +16,7 @@ const storage = new CloudinaryStorage({
     params: async (req, file) => {
         let folder = 'classflow/files';
         let resource_type = 'auto';
-        
+
         // Determine folder based on file type
         if (file.mimetype.startsWith('image/')) {
             folder = 'classflow/images';
@@ -28,7 +28,7 @@ const storage = new CloudinaryStorage({
             folder = 'classflow/spreadsheets';
             resource_type = 'raw';
         }
-        
+
         return {
             folder,
             resource_type,
@@ -55,7 +55,7 @@ export const upload = multer({
             'application/vnd.ms-powerpoint',
             'application/vnd.openxmlformats-officedocument.presentationml.presentation'
         ];
-        
+
         if (allowedTypes.includes(file.mimetype)) {
             cb(null, true);
         } else {

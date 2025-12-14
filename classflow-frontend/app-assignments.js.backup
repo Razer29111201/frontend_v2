@@ -1,5 +1,4 @@
 // app-assignments.js - Quản lý Bài tập và Chấm điểm
-// VERSION: FIXED - Không khai báo lại helpers
 
 // ===== GLOBAL STATE =====
 let currentAssignmentId = null;
@@ -40,7 +39,7 @@ async function loadAssignments(classId) {
                         <div class="assignment-meta">
                             <span class="badge ${isOverdue ? 'badge-danger' : 'badge-warning'}">
                                 <i class="fas fa-clock"></i> 
-                                Deadline: ${window.formatDate(assignment.deadline)}
+                                Deadline: ${formatDate(assignment.deadline)}
                             </span>
                             <span class="badge badge-info">
                                 <i class="fas fa-star"></i> ${assignment.maxScore} điểm
@@ -66,7 +65,7 @@ async function loadAssignments(classId) {
                         </div>
                     </div>
                     <div class="assignment-actions">
-                        ${window.currentUser && window.currentUser.roleId <= 1 ? `
+                        ${currentUser.roleId <= 1 ? `
                             <button class="btn btn-primary btn-sm" onclick="viewSubmissions(${assignment.id})">
                                 <i class="fas fa-eye"></i> Xem bài nộp
                             </button>
@@ -91,14 +90,14 @@ async function loadAssignments(classId) {
 
     } catch (error) {
         console.error('Error loading assignments:', error);
-        window.showAlert('error', 'Không thể tải danh sách bài tập: ' + error.message);
+        showAlert('Không thể tải danh sách bài tập: ' + error.message, 'error');
     }
 }
 
 // ===== CREATE ASSIGNMENT =====
 function openAddAssignmentModal() {
     if (!currentClassForAssignment) {
-        window.showAlert('warning', 'Vui lòng chọn lớp học trước');
+        showAlert('Vui lòng chọn lớp học trước', 'warning');
         return;
     }
 
@@ -110,7 +109,7 @@ function openAddAssignmentModal() {
     document.getElementById('assignmentMaxScore').value = '10';
     document.getElementById('assignmentFileInput').value = '';
 
-    window.openModal('assignmentModal');
+    openModal('assignmentModal');
 }
 
 async function saveAssignment() {
@@ -123,12 +122,12 @@ async function saveAssignment() {
         const fileInput = document.getElementById('assignmentFileInput');
 
         if (!title || !deadline) {
-            window.showAlert('warning', 'Vui lòng điền đầy đủ thông tin bắt buộc');
+            showAlert('Vui lòng điền đầy đủ thông tin bắt buộc', 'warning');
             return;
         }
 
         if (maxScore <= 0 || maxScore > 100) {
-            window.showAlert('warning', 'Điểm tối đa phải từ 1-100');
+            showAlert('Điểm tối đa phải từ 1-100', 'warning');
             return;
         }
 
@@ -152,24 +151,20 @@ async function saveAssignment() {
             data.fileUrl = fileResponse.fileUrl;
         }
 
-        window.showLoading();
-
         if (id) {
             await API.updateAssignment(id, data);
-            window.showAlert('success', 'Cập nhật bài tập thành công');
+            showAlert('Cập nhật bài tập thành công', 'success');
         } else {
             await API.createAssignment(data);
-            window.showAlert('success', 'Thêm bài tập thành công');
+            showAlert('Thêm bài tập thành công', 'success');
         }
 
-        window.hideLoading();
-        window.closeModal('assignmentModal');
+        closeModal('assignmentModal');
         await loadAssignments(currentClassForAssignment);
 
     } catch (error) {
-        window.hideLoading();
         console.error('Error saving assignment:', error);
-        window.showAlert('error', 'Không thể lưu bài tập: ' + error.message);
+        showAlert('Không thể lưu bài tập: ' + error.message, 'error');
     }
 }
 
@@ -177,22 +172,18 @@ async function deleteAssignment(id) {
     if (!confirm('Bạn có chắc muốn xóa bài tập này?\nMọi bài nộp sẽ bị xóa theo.')) return;
 
     try {
-        window.showLoading();
         await API.deleteAssignment(id);
-        window.hideLoading();
-        window.showAlert('success', 'Xóa bài tập thành công');
+        showAlert('Xóa bài tập thành công', 'success');
         await loadAssignments(currentClassForAssignment);
     } catch (error) {
-        window.hideLoading();
         console.error('Error deleting assignment:', error);
-        window.showAlert('error', 'Không thể xóa bài tập: ' + error.message);
+        showAlert('Không thể xóa bài tập: ' + error.message, 'error');
     }
 }
 
 // ===== VIEW SUBMISSIONS & GRADING =====
 async function viewSubmissions(assignmentId) {
     try {
-        window.showLoading();
         currentAssignmentId = assignmentId;
         const assignment = await API.getAssignment(assignmentId);
         const submissions = await API.getSubmissions(assignmentId);
@@ -200,7 +191,7 @@ async function viewSubmissions(assignmentId) {
 
         // Open grading modal
         document.getElementById('gradingAssignmentTitle').textContent = assignment.title;
-        document.getElementById('gradingDeadline').textContent = window.formatDate(assignment.deadline);
+        document.getElementById('gradingDeadline').textContent = formatDate(assignment.deadline);
         document.getElementById('gradingMaxScore').textContent = assignment.maxScore;
 
         // Create submissions table
@@ -215,7 +206,7 @@ async function viewSubmissions(assignmentId) {
 
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td>${student.code || student.id}</td>
+                <td>${student.studentCode || student.id}</td>
                 <td>${student.name}</td>
                 <td>
                     ${submitted ? `
@@ -229,7 +220,7 @@ async function viewSubmissions(assignmentId) {
                         </span>
                     `}
                 </td>
-                <td>${submitted ? window.formatDate(submission.submittedAt) : '-'}</td>
+                <td>${submitted ? formatDate(submission.submittedAt) : '-'}</td>
                 <td>
                     ${submitted && submission.fileUrl ? `
                         <a href="${submission.fileUrl}" target="_blank" class="btn btn-sm btn-secondary">
@@ -265,13 +256,11 @@ async function viewSubmissions(assignmentId) {
             tbody.appendChild(row);
         });
 
-        window.hideLoading();
-        window.openModal('gradingModal');
+        openModal('gradingModal');
 
     } catch (error) {
-        window.hideLoading();
         console.error('Error loading submissions:', error);
-        window.showAlert('error', 'Không thể tải danh sách bài nộp: ' + error.message);
+        showAlert('Không thể tải danh sách bài nộp: ' + error.message, 'error');
     }
 }
 
@@ -284,30 +273,25 @@ async function gradeSubmission(submissionId, maxScore) {
         const feedback = feedbackInput.value.trim();
 
         if (isNaN(score) || score < 0 || score > maxScore) {
-            window.showAlert('warning', `Điểm phải từ 0 đến ${maxScore}`);
+            showAlert(`Điểm phải từ 0 đến ${maxScore}`, 'warning');
             return;
         }
 
-        window.showLoading();
         await API.gradeSubmission(submissionId, { score, feedback });
-        window.hideLoading();
-        window.showAlert('success', 'Chấm điểm thành công');
+        showAlert('Chấm điểm thành công', 'success');
 
         // Refresh submissions
         await viewSubmissions(currentAssignmentId);
 
     } catch (error) {
-        window.hideLoading();
         console.error('Error grading submission:', error);
-        window.showAlert('error', 'Không thể chấm điểm: ' + error.message);
+        showAlert('Không thể chấm điểm: ' + error.message, 'error');
     }
 }
 
 async function bulkGrade() {
     const rows = document.querySelectorAll('#submissionsTable tr');
     let graded = 0;
-
-    window.showLoading();
 
     for (const row of rows) {
         const scoreInput = row.querySelector('input[type="number"]');
@@ -329,8 +313,7 @@ async function bulkGrade() {
         }
     }
 
-    window.hideLoading();
-    window.showAlert('success', `Đã chấm điểm cho ${graded} bài nộp`);
+    showAlert(`Đã chấm điểm cho ${graded} bài nộp`, 'success');
     await viewSubmissions(currentAssignmentId);
 }
 
@@ -339,7 +322,7 @@ function openSubmitAssignmentModal(assignmentId) {
     currentAssignmentId = assignmentId;
     document.getElementById('submissionFileInput').value = '';
     document.getElementById('submissionContent').value = '';
-    window.openModal('submitAssignmentModal');
+    openModal('submitAssignmentModal');
 }
 
 async function submitAssignment() {
@@ -348,13 +331,13 @@ async function submitAssignment() {
         const content = document.getElementById('submissionContent').value.trim();
 
         if (fileInput.files.length === 0 && !content) {
-            window.showAlert('warning', 'Vui lòng chọn file hoặc nhập nội dung bài làm');
+            showAlert('Vui lòng chọn file hoặc nhập nội dung bài làm', 'warning');
             return;
         }
 
         const data = {
             assignmentId: currentAssignmentId,
-            studentId: window.currentUser.id,
+            studentId: currentUser.id,
             content: content
         };
 
@@ -362,33 +345,26 @@ async function submitAssignment() {
             data.file = fileInput.files[0];
         }
 
-        window.showLoading();
         await API.createSubmission(data);
-        window.hideLoading();
-        window.showAlert('success', 'Nộp bài thành công');
-        window.closeModal('submitAssignmentModal');
+        showAlert('Nộp bài thành công', 'success');
+        closeModal('submitAssignmentModal');
         await loadAssignments(currentClassForAssignment);
 
     } catch (error) {
-        window.hideLoading();
         console.error('Error submitting assignment:', error);
-        window.showAlert('error', 'Không thể nộp bài: ' + error.message);
+        showAlert('Không thể nộp bài: ' + error.message, 'error');
     }
 }
 
 // ===== GRADES VIEW =====
 async function loadGrades(classId) {
     try {
-        window.showLoading();
         const grades = await API.getGradesByClass(classId);
         const students = await API.getStudentsByClass(classId);
         const assignments = await API.getAssignmentsByClass(classId);
 
         const container = document.getElementById('gradesTableContainer');
-        if (!container) {
-            window.hideLoading();
-            return;
-        }
+        if (!container) return;
 
         if (assignments.length === 0) {
             container.innerHTML = `
@@ -397,7 +373,6 @@ async function loadGrades(classId) {
                     <p>Chưa có bài tập nào để hiển thị điểm</p>
                 </div>
             `;
-            window.hideLoading();
             return;
         }
 
@@ -418,7 +393,7 @@ async function loadGrades(classId) {
         html += '<tbody>';
         students.forEach(student => {
             html += '<tr>';
-            html += `<td>${student.code || student.id}</td>`;
+            html += `<td>${student.studentCode || student.id}</td>`;
             html += `<td>${student.name}</td>`;
 
             let totalScore = 0;
@@ -441,7 +416,7 @@ async function loadGrades(classId) {
             });
 
             const average = count > 0 ? (totalScore / count).toFixed(1) : '-';
-            html += `<td class="grade-cell average ${average !== '-' ? getGradeClass(average, 10) : ''}">
+            html += `<td class="grade-cell average ${getGradeClass(average, 10)}">
                 <strong>${average}</strong>
             </td>`;
             html += '</tr>';
@@ -449,12 +424,10 @@ async function loadGrades(classId) {
 
         html += '</tbody></table></div>';
         container.innerHTML = html;
-        window.hideLoading();
 
     } catch (error) {
-        window.hideLoading();
         console.error('Error loading grades:', error);
-        window.showAlert('error', 'Không thể tải bảng điểm: ' + error.message);
+        showAlert('Không thể tải bảng điểm: ' + error.message, 'error');
     }
 }
 
@@ -469,7 +442,6 @@ function getGradeClass(score, maxScore) {
 // ===== EXPORT GRADES =====
 async function exportGradesExcel(classId) {
     try {
-        window.showLoading();
         const classData = await API.getClass(classId);
         const grades = await API.getGradesByClass(classId);
         const students = await API.getStudentsByClass(classId);
@@ -486,7 +458,7 @@ async function exportGradesExcel(classId) {
 
         // Rows
         students.forEach(student => {
-            const row = [student.code || student.id, student.name];
+            const row = [student.studentCode || student.id, student.name];
 
             let totalScore = 0;
             let count = 0;
@@ -511,19 +483,26 @@ async function exportGradesExcel(classId) {
         });
 
         // Create Excel
-        const ws = window.XLSX.utils.aoa_to_sheet(data);
-        const wb = window.XLSX.utils.book_new();
-        window.XLSX.utils.book_append_sheet(wb, ws, 'Bảng điểm');
+        const ws = XLSX.utils.aoa_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Bảng điểm');
 
-        window.XLSX.writeFile(wb, `Bang_diem_${classData.code}_${window.formatDate(new Date())}.xlsx`);
-        window.hideLoading();
-        window.showAlert('success', 'Xuất Excel thành công');
+        XLSX.writeFile(wb, `Bang_diem_${classData.classCode}_${formatDate(new Date())}.xlsx`);
+        showAlert('Xuất Excel thành công', 'success');
 
     } catch (error) {
-        window.hideLoading();
         console.error('Error exporting grades:', error);
-        window.showAlert('error', 'Không thể xuất Excel: ' + error.message);
+        showAlert('Không thể xuất Excel: ' + error.message, 'error');
     }
+}
+
+// ===== UTILITY FUNCTIONS =====
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
 }
 
 // ===== EXPORT TO WINDOW =====
@@ -539,5 +518,4 @@ window.submitAssignment = submitAssignment;
 window.loadGrades = loadGrades;
 window.exportGradesExcel = exportGradesExcel;
 
-console.log('✅ Assignments module loaded - FIXED VERSION');
-console.log('✅ Ready: Create, Edit, Grade, Export');
+console.log('✅ Assignments module loaded');

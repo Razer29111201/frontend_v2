@@ -307,23 +307,6 @@ function updateSidebarMenu() {
         menuHTML += '<li><a onclick="showCMs()"><i class="fas fa-user-shield"></i> Class Manager</a></li>';
     }
 
-    // ⭐ THÊM 4 MENU ITEMS MỚI:
-
-    // Notifications
-    menuHTML += `<li><a onclick="showNotifications()">
-        <i class="fas fa-bell"></i> Thông báo
-        <span class="badge badge-danger" id="unreadBadge" style="display:none;">0</span>
-    </a></li>`;
-
-    // Files
-    menuHTML += '<li><a onclick="showFiles()"><i class="fas fa-folder"></i> Tài liệu</a></li>';
-
-    // Holidays
-    menuHTML += '<li><a onclick="showHolidays()"><i class="fas fa-calendar-alt"></i> Ngày nghỉ lễ</a></li>';
-
-    // Activity Logs
-    menuHTML += '<li><a onclick="showActivityLogs()"><i class="fas fa-history"></i> Lịch sử hoạt động</a></li>';
-
     sidebar.innerHTML = menuHTML;
 
     // Set active
@@ -475,7 +458,6 @@ function renderClassCards(classList, containerId) {
             </div>`;
         return;
     }
-    console.log(classList);
 
     container.innerHTML = classList.map(cls => `
         <div class="class-card" onclick="viewClassDetail(${cls.id})">
@@ -1628,10 +1610,6 @@ function switchTab(event, tabId) {
         loadAttendanceTab();
     } else if (tabId === 'commentsTab') {
         loadCommentsTab();
-    } else if (tabId === 'assignmentsTab') {
-        loadAssignmentsTab();
-    } else if (tabId === 'gradesTab') {
-        loadGradesTab();
     }
 }
 
@@ -1886,30 +1864,6 @@ async function exportCMs() {
     }
 }
 
-
-// ===== ASSIGNMENTS & GRADES TABS =====
-async function loadAssignmentsTab() {
-    if (!currentClassId) return;
-    window.currentClassForAssignment = currentClassId;
-
-    const addBtn = document.getElementById('addAssignmentBtn');
-    if (addBtn) {
-        const canCreate = hasPermission('', 'classes', 'create');
-        addBtn.style.display = canCreate ? 'inline-block' : 'none';
-    }
-
-    if (typeof window.loadAssignments === 'function') {
-        await window.loadAssignments(currentClassId);
-    }
-}
-
-async function loadGradesTab() {
-    if (!currentClassId) return;
-    if (typeof window.loadGrades === 'function') {
-        await window.loadGrades(currentClassId);
-    }
-}
-
 // ===== EXPOSE TO WINDOW =====
 window.login = login;
 window.logout = logout;
@@ -1961,8 +1915,6 @@ window.exportClasses = exportClasses;
 window.exportStudents = exportStudents;
 window.exportTeachers = exportTeachers;
 window.exportCMs = exportCMs;
-window.loadAssignmentsTab = loadAssignmentsTab;
-window.loadGradesTab = loadGradesTab;
 window.showNotifications = showNotifications;
 window.loadNotifications = loadNotifications;
 window.markNotificationRead = markNotificationRead;
@@ -1993,10 +1945,9 @@ window.loadActivityLogs = loadActivityLogs;
 window.filterLogs = filterLogs;
 window.viewLogDetail = viewLogDetail;
 
-
 // Polling notifications every 30s
 
-console.log('✅ App.js v2.2 loaded successfully - Assignments & Grades Fixed!');
+console.log('✅ App.js v2.1 loaded successfully - All bugs fixed!');
 console.log('✅ Attendance system fixed!');
 console.log('✅ Roles: 0=Admin, 1=Teacher, 2=CM');
 
@@ -2737,4 +2688,5 @@ function formatDateTime(dateStr) {
 
 // ===== INITIALIZATION =====
 // Load unread badge when user logs in
+
 

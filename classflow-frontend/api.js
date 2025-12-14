@@ -1,5 +1,5 @@
 // api.js - API Client cho ClassFlow LMS
-// Tương thích với Backend MySQL/Express
+// Version: FIXED - Đã sửa lỗi trùng lặp và thiếu API
 
 const CONFIG = {
     API_URL: 'http://localhost:8080/api',
@@ -62,7 +62,6 @@ const API = {
         const response = await this.call('/auth/login', 'POST', { email, password });
 
         if (response.success && response.data) {
-            // Lưu session
             localStorage.setItem(CONFIG.SESSION_KEY, JSON.stringify({
                 token: response.data.token,
                 user: response.data.user,
@@ -131,6 +130,11 @@ const API = {
         const endpoint = classId ? `/students?classId=${classId}` : '/students';
         const response = await this.call(endpoint, 'GET');
         return response.data || [];
+    },
+
+    // ✅ THÊM MỚI: getStudentsByClass (alias cho getStudents)
+    async getStudentsByClass(classId) {
+        return await this.getStudents(classId);
     },
 
     async getStudent(id) {
@@ -271,7 +275,6 @@ const API = {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${session.token}`
-                // Don't set Content-Type for FormData, browser will set it with boundary
             },
             body: formData
         });
@@ -430,7 +433,6 @@ const API = {
     },
 
     async saveComments(classId, comments) {
-        // comments = [{ studentId, comment }, ...]
         return await this.call('/comments', 'POST', { classId, comments });
     },
 
@@ -442,7 +444,7 @@ const API = {
         return await this.call(`/comments/${classId}/${studentId}`, 'DELETE');
     },
 
-    // ===== GRADES =====
+    // ===== GRADES API =====
     async getGradesByClass(classId) {
         const response = await this.call(`/grades/class/${classId}`, 'GET');
         return response.data || [];
@@ -631,27 +633,6 @@ const API = {
     async deleteSubmission(id) {
         const response = await this.call(`/submissions/${id}`, 'DELETE');
         return response;
-    },
-
-    // ===== GRADES API (Điểm số) =====
-    async getGradesByClass(classId) {
-        const response = await this.call(`/grades/class/${classId}`);
-        return response.data || [];
-    },
-
-    async getGradesByStudent(studentId) {
-        const response = await this.call(`/grades/student/${studentId}`);
-        return response.data || [];
-    },
-
-    async updateGrade(data) {
-        const response = await this.call('/grades', 'PUT', data);
-        return response.data;
-    },
-
-    async exportGrades(classId) {
-        const response = await this.call(`/grades/class/${classId}/export`);
-        return response.data;
     }
 };
 
@@ -670,5 +651,5 @@ window.API = API;
 window.CONFIG = CONFIG;
 window.CMAPI = CMAPI;
 
-console.log('✅ API Client initialized');
+console.log('✅ API Client initialized (FIXED VERSION)');
 console.log('📡 API URL:', CONFIG.API_URL);
